@@ -129,6 +129,16 @@ def get_S_albums(album_name=None, artist_name=None):
     return query, results
 
 
+def get_S_artists(artist_name=None):
+    query = ''
+    query += ('artist:' + artist_name) if artist_name is not None else ''
+    print(f'-> Query = {query}\n')
+    results = SPOTIFY.search(q=query, limit=1, type='artist')
+
+    print('-> Results found:')
+    return query, results
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('deezer_link', type = str)
@@ -153,6 +163,11 @@ if __name__ == "__main__":
         artist_name = preprocess_string(item_info['artist']['name'])
         # print(f'Searching for: {album_name} by {artist_name}')
         S_query, S_results = get_S_albums(album_name, artist_name)
+
+    elif item_type == 'artist':
+        artist_name = preprocess_string(item_info['name'])
+        # print(f'Searching for: {artist_name}')
+        S_query, S_results = get_S_artists(artist_name)
 
     # print(get_all_values_for_key(S_results, 'spotify'))
 
