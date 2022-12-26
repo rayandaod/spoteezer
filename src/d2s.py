@@ -12,7 +12,7 @@ deezer_api = "/2.0/"
 connection = HTTPSConnection("api.deezer.com")
 
 SpotifyClientCredentials = spotipy.oauth2.SpotifyClientCredentials
-with open('/Users/rayandaod/Documents/Docs/Learning/spoteefire/spotify_credentials.txt', 'r') as f:
+with open('./../spotify_credentials.txt', 'r') as f:
     SPOTIFY_CLIENT_ID = f.readline().strip()
     SPOTIFY_CLIENT_SECRET = f.readline().strip()
 
