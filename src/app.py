@@ -1,6 +1,6 @@
 import json
 
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, Response
 from flask_cors import CORS
 
 from convert_link import convert_deezer_to_spotify
