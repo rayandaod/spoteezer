@@ -1,3 +1,4 @@
 spotify_credentials.txt
 .DS_Store
 .cache
+__pycache__

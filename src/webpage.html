@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Spoteezer</title>
+    <style>
+        /* Add some styling to the page */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+            width: 100%;
+            background: linear-gradient(to bottom, rgb(25, 25, 25) 50%, rgb(101, 212, 110));
+        }
+
+        h1 {
+            font-size: 4em;
+            font-weight: bold;
+            /* margin-bottom: 1em; */
+            text-align: center;
+            color: white;
+        }
+
+        form {
+            display: flex;
+            align-items: center; /* center the form vertically */
+            justify-content: center; /* center the form horizontally */
+            width: 50%;
+            margin: 0 auto; 
+            flex-direction: column;
+        }
+
+        input[type="text"] {
+            width: 50%;
+            padding: 0.5em;
+            font-size: 1.5em;
+            border: 1px solid rgb(1, 1, 1);
+            border-radius: 2px;
+            text-align: center;
+        }
+
+        button[type="submit"] {
+            margin-top: 1em;
+            padding: 0.5em 1em;
+            font-size: 1em;
+            border: none;
+            border-radius: 4px;
+            background-color: rgb(101, 212, 110);
+            color: white;
+            cursor: pointer;
+        }
+
+
+        button[type="submit"]:hover {
+            background-color: #00acc1;
+        }
+
+        .result {
+            margin-top: 1em;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #000000;
+            cursor: pointer;
+        }
+
+        .result:hover {
+            color: #00acc1;
+        }
+
+        .log {
+            margin-top: 0.5em;
+            font-size: 1em;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Spoteezer</h1>
+    <form id="form">
+        <div>
+            <input type="text" id="deezer-link" placeholder="Deezer link" size="80">
+        </div>
+        <div>
+            <button type="submit" id="convert-button">Convert to Spotify</button>
+        </div>
+    </form>
+    <p class="result" id="result"></p>
+    <div class="log" id="log"></div>
+
+    <script>
+        const form = document.getElementById('form');
+        const deezerLinkInput = document.getElementById('deezer-link');
+        const convertButton = document.getElementById('convert-button');
+        const resultElement = document.getElementById('result');
+        const logElement = document.getElementById('log');
+
+        // Add an event listener to the form to handle the submission
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            // Get the Deezer link from the input
+            const deezerLink = deezerLinkInput.value;
+
+            // Clear the result and log elements
+            resultElement.innerHTML = '';
+            logElement.innerHTML = '';
+
+            // Send a POST request to the server with the Deezer link
+            fetch('http://127.0.0.1:5000/convert', {
+                method: 'POST',
+                body: deezerLink,
+            })
+                .then((response) => {
+                    // When the server responds, parse the response as JSON
+                    return response.json();
+                })
+                .then((data) => {
+                    // Get the Spotify link and log messages from the response data
+                    const spotifyLink = data.spotifyLink;
+                    const log = data.log;
+
+                    // Set the result element to the Spotify link and make it clickable
+                    resultElement.innerHTML = spotifyLink;
+                    resultElement.href = spotifyLink;
+                    resultElement.target = '_blank';
+
+                    // Set the log element to the log messages
+                    logElement.innerHTML = log;
+                })
+                .catch((error) => {
+                    // If there is an error, log it to the console and set the log element to the error message
+                    console.error(error);
+                    logElement.innerHTML = 'An error occurred: ' + error;
+                });
+        });
+
+    </script>
+</body>
+
+</html>

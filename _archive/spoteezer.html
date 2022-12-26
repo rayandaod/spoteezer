@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Spoteezer</title>
+</head>
+
+<body>
+    <h1>Spoteezer</h1>
+    <p>Enter a Deezer link below:</p>
+    <form id="form">
+        <input type="text" id="deezer-link" placeholder="Deezer link">
+        <button type="submit" id="convert-button">Convert to Spotify</button>
+    </form>
+    <p id="result"></p>
+    <div id="log"></div>
+
+    <script>
+        // Get references to the form, input, button, and result elements
+        const form = document.getElementById('form');
+        const deezerLinkInput = document.getElementById('deezer-link');
+        const convertButton = document.getElementById('convert-button');
+        const result = document.getElementById('result');
+        const log = document.getElementById('log');
+
+        // Add an event listener to the form that is triggered when the form is submitted
+        form.addEventListener('submit', (event) => {
+            // Prevent the form from being submitted and causing the page to refresh
+            event.preventDefault();
+
+            // Get the value of the Deezer link input
+            const deezerLink = deezerLinkInput.value;
+
+            // Send an HTTP POST request to the Python script with the Deezer link as the body of the request
+            fetch('http://127.0.0.1:5000/convert', {
+                method: 'POST',
+                body: deezerLink
+            })
+            .then((response) => {
+                // When the server responds, parse the response as JSON
+                return response.json();
+            })
+
+            .then((data) => {
+                // If the server responded with a Spotify link, display it in the result element
+                if (data.spotifyLink) {
+                    result.innerHTML = `Spotify link: ${data.spotifyLink}`;
+                }
+
+                // If the server responded with a log message, display it in the log element
+                if (data.log) {
+                    log.innerHTML = `Log: ${data.log}`;
+                }
+            })
+            .catch((error) => {
+                // If there was an error, display it in the log element
+                log.innerHTML = `Error: ${error}`;
+            });
+        });
+    </script>
+</body>
+
+</html>

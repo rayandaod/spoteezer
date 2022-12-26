@@ -24,20 +24,20 @@ SPE_CHARS = ['&', '"', '#', '%', "'", '*', '+', ',', '.', '/', ':', ';', '<', '=
 SPE_CHARS_WITH_REPLACE = ['  ']
 
 
-def get_first_value(data, key, string):
+def get_first_value(data, key, substring):
     if isinstance(data, dict):
         # Check if the current level contains the key
-        if key in data and string in data[key]:
+        if key in data and substring in data[key]:
             return data[key]
         # Otherwise, recursively search the nested dictionaries
         for value in data.values():
-            result = get_first_value(value, key, string)
+            result = get_first_value(value, key, substring)
             if result is not None:
                 return result
     elif isinstance(data, list):
         # Recursively search the list elements
         for item in data:
-            result = get_first_value(item, key, string)
+            result = get_first_value(item, key, substring)
             if result is not None:
                 return result
     return None
@@ -139,13 +139,9 @@ def get_S_artists(artist_name=None):
     return query, results
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('deezer_link', type = str)
-    args = parser.parse_args()
-
+def convert_deezer_to_spotify(deezer_link):
     # Get the final link after redirection
-    item_final_link = get_D_final_url(args.deezer_link)
+    item_final_link = get_D_final_url(deezer_link)
 
     # Parse the support and id from the final link
     item_type, item_id = get_D_item_identifiers(item_final_link)
@@ -171,5 +167,13 @@ if __name__ == "__main__":
 
     # print(get_all_values_for_key(S_results, 'spotify'))
 
-    link = get_first_value(S_results, 'spotify', item_type)
-    print(link)
+    spotify_link = get_first_value(S_results, 'spotify', substring=item_type)
+
+    return spotify_link
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('deezer_link', type = str)
+    args = parser.parse_args()
+    print(convert_deezer_to_spotify(args.deezer_link))
