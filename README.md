@@ -1,6 +1,6 @@
 # Spoteezer
 
-![alt text](resources/spoteezer_logo.png)
+![alt text](resources/spoteezer.png)
 
 I am currently trying Deezer but have friends and family on Spotify.\
 This repo will regroup some Deezer-to-Spotify utilities (and vice-versa).
