@@ -1,24 +1,37 @@
-# spoteezer
+# Spoteezer
 I am currently trying Deezer but have friends and family on Spotify.\
 This repo will regroup some Deezer-to-Spotify utilities (and vice-versa).
 
 ## Installation
 
-First clone the repository:\
-`git clone https://github.com/rayandaod/spoteezer`
+First, you should clone the repository and navigate to it:
+```
+git clone https://github.com/rayandaod/spoteezer
+cd spoteezer
+```
 
-You need to pip install some useful libraries.\
-It is recommended to use a conda environment to keep your python installation clean.\
-`pip install -r requirements.txt`
+Then, you need to install some useful libraries.\
+Best practice is to create a separate environment, so let's do that with conda.
+```
+conda env create -f environment.yml
+conda activate spoteezer
+```
 
-Then create a file called `spotify_credentials.txt` at the root of this repo.\
-Put your application client id in the first line of the txt file.
-And the application client secret in the second line of the txt file.
+Then create a file called `spotify_credentials.txt` at the root, and complete it as follows with your [Spotify developper app](https://developer.spotify.com/dashboard/applications):
+```
+[SPOTIFY_CLIENT_ID]
+[SPOTIFY_CLIENT_SECRET]
+```
 
-## Deezer link to Spotify link (only track links for now)
-Very useful to send Deezer music to Spotify users.
+## Usage
 
-Usage: `python d2s.py [deezer_link]`
+### Convert a Deezer link to a Spotify link
+
+⚠️ Only works with single tracks for now.
+
+Make sure you are in the `src` folder and run:
+
+`python convert_link.py [deezer_link]`
 
 On Mac, you can use the following shortcut to quickly convert links:
 https://www.icloud.com/shortcuts/562d373485a84d6a9ac64e3df6bd19d1
