@@ -5,3 +5,5 @@ dependencies:
   - pip:
     - requests
     - spotipy
+    - flask
+    - flask_cors
