@@ -27,7 +27,7 @@ Then create a file called `spotify_credentials.txt` at the root, and complete it
 
 ### Convert a Deezer link to a Spotify link
 
-⚠️ Only works with single tracks for now.
+⚠️ Works for single tracks, albums, and artists
 
 Make sure you are in the `src` folder and run:
 
