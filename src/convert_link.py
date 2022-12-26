@@ -12,12 +12,35 @@ deezer_api = "/2.0/"
 connection = HTTPSConnection("api.deezer.com")
 
 SpotifyClientCredentials = spotipy.oauth2.SpotifyClientCredentials
+
 with open('./../spotify_credentials.txt', 'r') as f:
     SPOTIFY_CLIENT_ID = f.readline().strip()
     SPOTIFY_CLIENT_SECRET = f.readline().strip()
 
-spe_chars = ['&', '"', '#', '%', "'", '*', '+', ',', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~', '(', ')']
-spe_chars_with_replace = ['  ']
+SPOTIFY_CLIENT_CREDS = SpotifyClientCredentials(client_id=SPOTIFY_CLIENT_ID, client_secret=SPOTIFY_CLIENT_SECRET)
+SPOTIFY = spotipy.Spotify(client_credentials_manager=SPOTIFY_CLIENT_CREDS)
+
+SPE_CHARS = ['&', '"', '#', '%', "'", '*', '+', ',', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~', '(', ')']
+SPE_CHARS_WITH_REPLACE = ['  ']
+
+
+def get_first_value(data, key, string):
+    if isinstance(data, dict):
+        # Check if the current level contains the key
+        if key in data and string in data[key]:
+            return data[key]
+        # Otherwise, recursively search the nested dictionaries
+        for value in data.values():
+            result = get_first_value(value, key, string)
+            if result is not None:
+                return result
+    elif isinstance(data, list):
+        # Recursively search the list elements
+        for item in data:
+            result = get_first_value(item, key, string)
+            if result is not None:
+                return result
+    return None
 
 
 def get_D_data(url):
@@ -47,35 +70,39 @@ def get_D_item_identifiers(url):
 
 
 def preprocess_string(string):
-    for char in spe_chars:
+    for char in SPE_CHARS:
         if char in string:
             string = string.replace(char, '')
 
-    for char in spe_chars_with_replace:
+    for char in SPE_CHARS_WITH_REPLACE:
         if char in string:
             string = string.replace(char, ' ')
     
     return string.lower()
 
 
-def get_S_results(track_name, artist_name, album_name):
-    client_credentials_manager = SpotifyClientCredentials(client_id=SPOTIFY_CLIENT_ID, client_secret=SPOTIFY_CLIENT_SECRET)
-    sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-    query = 'track:' + track_name + ' artist:' + artist_name + ' album:' + album_name
+def get_S_tracks(track_name=None, artist_name=None, album_name=None):
+    query = ''
+    query += ('track:' + track_name) if track_name is not None else ''
+    query += (' artist:' + artist_name) if artist_name is not None else ''
+    query += (' album:' + album_name) if album_name is not None else ''
     print(f'-> Query = {query}\n')
-    results = sp.search(q=query, limit=1, type='track')
+    results = SPOTIFY.search(q=query, limit=1, type='track')
     
     if results['tracks']['total'] == 0:
         print('/!\ No results found with album, searching without album')
-        query = 'track:' + track_name + ' artist:' + artist_name
+        query = ''
+        query += ('track:' + track_name) if track_name is not None else ''
+        query += (' artist:' + artist_name) if artist_name is not None else ''
         print(f'-> Query = {query}\n')
-        results = sp.search(q=query, limit=1, type='track')
+        results = SPOTIFY.search(q=query, limit=1, type='track')
         
         if results['tracks']['total'] == 0:
             print('/!\ No results found with artist, searching without artist')
-            query = 'track:' + track_name
+            query = ''
+            query += ('track:' + track_name) if track_name is not None else ''
             print(f'-> Query = {query}\n')
-            results = sp.search(q=query, limit=1, type='track')
+            results = SPOTIFY.search(q=query, limit=1, type='track')
             
             if results['tracks']['total'] == 0:
                 raise Exception('No results found')
@@ -84,9 +111,22 @@ def get_S_results(track_name, artist_name, album_name):
     return query, results
 
 
-def choose_result(results):
-    for i, item in enumerate(results['tracks']['items']):
-        print("%d: %s - %s" % (i, item['artists'][0]['name'], item['name']))
+def get_S_albums(album_name=None, artist_name=None):
+    query = ''
+    query += ('album:' + album_name) if album_name is not None else ''
+    query += (' artist:' + artist_name) if artist_name is not None else ''
+    print(f'-> Query = {query}\n')
+    results = SPOTIFY.search(q=query, limit=1, type='album')
+    
+    if results['albums']['total'] == 0:
+        print('/!\ No results found with artist, searching without artist')
+        query = ''
+        query += ('album:' + album_name) if album_name is not None else ''
+        print(f'-> Query = {query}\n')
+        results = SPOTIFY.search(q=query, limit=1, type='album')
+    
+    print('-> Results found:')
+    return query, results
 
 
 if __name__ == "__main__":
@@ -100,13 +140,21 @@ if __name__ == "__main__":
     # Parse the support and id from the final link
     item_type, item_id = get_D_item_identifiers(item_final_link)
     item_info = get_D_info(item_type, int(item_id))
-    # print(item_info)
 
-    track_name = preprocess_string(item_info['title'])
-    artist_name = preprocess_string(item_info['artist']['name'])
-    album_name = preprocess_string(item_info['album']['title'])
-    # print(f'Searching for: {track_name} by {artist_name} in {album_name}')
+    if item_type == 'track':
+        track_name = preprocess_string(item_info['title'])
+        artist_name = preprocess_string(item_info['artist']['name'])
+        album_name = preprocess_string(item_info['album']['title'])
+        # print(f'Searching for: {track_name} by {artist_name} in {album_name}')
+        S_query, S_results = get_S_tracks(track_name, artist_name, album_name)
+    
+    elif item_type == 'album':
+        album_name = preprocess_string(item_info['title'])
+        artist_name = preprocess_string(item_info['artist']['name'])
+        # print(f'Searching for: {album_name} by {artist_name}')
+        S_query, S_results = get_S_albums(album_name, artist_name)
 
-    S_query, S_results = get_S_results(track_name, artist_name, album_name)
-    # print(spotify_results)
-    print(S_results['tracks']['items'][0]['external_urls']['spotify'])
+    # print(get_all_values_for_key(S_results, 'spotify'))
+
+    link = get_first_value(S_results, 'spotify', item_type)
+    print(link)
