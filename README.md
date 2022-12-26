@@ -17,7 +17,7 @@ conda env create -f environment.yml
 conda activate spoteezer
 ```
 
-Then create a file called `spotify_credentials.txt` at the root, and complete it as follows with your [Spotify developper app](https://developer.spotify.com/dashboard/applications):
+Then create a file called `spotify_credentials.txt` at the root, and complete it as follows with your [Spotify developper app](https://developer.spotify.com/dashboard/applications) credentials:
 ```
 [SPOTIFY_CLIENT_ID]
 [SPOTIFY_CLIENT_SECRET]
