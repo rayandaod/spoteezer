@@ -31,7 +31,24 @@ Then create a file called `spotify_credentials.txt` at the root, and complete it
 
 Make sure you are in the `src` folder and run:
 
+#### Command line
+
 `python convert_link.py [deezer_link]`
 
-On Mac, you can use the following shortcut to quickly convert links:
+#### Flask App + HTML Webpage
+
+![alt text](resources/convert_link.gif)
+
+Run `python app.py`\
+Open `webpage.html`\
+Enter the Deezer link in the input form as described in the gif above, and click _Convert to Spotify_.\
+Click on the retrieved Spotify link to open it in a new tab.
+
+#### MacOS Shortcuts
+
+On MacOS, one can create a shortcut to easily launch this script.
+
+To do so, install the following shortcut and modify it to match your paths:
 https://www.icloud.com/shortcuts/562d373485a84d6a9ac64e3df6bd19d1
+
+Copy the Deezer link in your clipboard and run the shortcut. The resulting Spotify link will shortly be copied to your clipboard. Paste it wherever you want!
