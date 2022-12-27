@@ -5,6 +5,8 @@
 I am currently trying Deezer but have friends and family on Spotify.\
 This repo will regroup some Deezer-to-Spotify utilities (and vice-versa).
 
+[Online demo](rayan.daodnathoo.com/spoteezer)
+
 ## Installation
 
 First, you should clone the repository and navigate to it:
@@ -20,11 +22,14 @@ conda env create -f environment.yml
 conda activate spoteezer
 ```
 
-Then create a file called `spotify_credentials.txt` at the root, and complete it as follows with your [Spotify developper app](https://developer.spotify.com/dashboard/applications) credentials:
+Then add the following environment variables to your `.zshrc` / `.bashrc` / ... profile:
+
 ```
-[SPOTIFY_CLIENT_ID]
-[SPOTIFY_CLIENT_SECRET]
+export SPOTIFY_CLIENT_ID='[your_spotify_client_id]'
+export SPOTIFY_CLIENT_SECRET='[your_spotify_client_secret]'
 ```
+
+You can get these information by creating a [Spotify developper app](https://developer.spotify.com/dashboard/applications).
 
 ## Usage
 
@@ -35,18 +40,19 @@ Then create a file called `spotify_credentials.txt` at the root, and complete it
 
 #### Command line
 
-Make sure you are in the `src` folder and run:\
+Make sure you are in the conda environment and that you are located in the `src` folder, and run:\
 `python convert_link.py [deezer_link]`
 
-#### Local Flask app + HTML webpage
+#### Flask app + HTML webpage
 
-![alt text](resources/convert_link_web.gif)
+([Online demo](rayan.daodnathoo.com/spoteezer))
 
-- Run `python app.py`
+To run everything locally, you'll need to modify `webpage.html` to communicate with your local Flask server (`127.0.0.1:5000/convert` root).
+
+Then:
+
+- Run `python flask_app.py`
 - Open `webpage.html`
-- Enter the Deezer link in the input form as described in the gif above
-- Click `Convert to Spotify`.
-- Click on the retrieved Spotify link to open it in a new tab.
 
 #### MacOS shortcut (Apple Shortcuts)
 
