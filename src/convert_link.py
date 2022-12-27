@@ -13,7 +13,7 @@ deezer_api = "/2.0/"
 connection = HTTPSConnection("api.deezer.com")
 
 SpotifyClientCredentials = spotipy.oauth2.SpotifyClientCredentials
-SPOTIFY_CLIENT_CREDS = SpotifyClientCredentials(client_id=os.environ['SPOTIFY_CLIENT_ID'], client_secret=os.environ['SPOTIFY_CLIENT_SECRET'])
+SPOTIFY_CLIENT_CREDS = SpotifyClientCredentials(client_id=os.environ.get('SPOTIFY_CLIENT_ID'), client_secret=os.environ.get('SPOTIFY_CLIENT_SECRET'))
 SPOTIFY = spotipy.Spotify(client_credentials_manager=SPOTIFY_CLIENT_CREDS)
 
 SPE_CHARS = ['&', '"', '#', '%', "'", '*', '+', ',', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~', '(', ')']
