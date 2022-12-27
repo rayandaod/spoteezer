@@ -3,6 +3,7 @@
 
 <head>
     <title>Spoteezer</title>
+    <link rel="icon" type="image/png" href="../resources/spoteezer.png">
     <style>
         /* Add some styling to the page */
         body {
@@ -11,7 +12,6 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            margin: 0;
             font-family: sans-serif;
             width: 100%;
             background: linear-gradient(to bottom, rgb(25, 25, 25) 50%, rgb(101, 212, 110));
@@ -20,17 +20,23 @@
         h1 {
             font-size: 4em;
             font-weight: bold;
-            /* margin-bottom: 1em; */
-            text-align: center;
             color: white;
         }
 
         form {
-            margin: 0 auto;
+            width: 80%;  /* set the width of the form to 80% of the viewport width */
+            margin-top: 3em;
             text-align: center;
         }
 
+        @media (max-width: 600px) {
+            form {
+                width: 90%;  /* set the width of the form to 90% of the viewport width on small screens */
+            }
+        }
+
         input[type="text"] {
+            width: 100%;  /* set the width of the input field to 100% of the form width */
             padding: 0.5em;
             font-size: 1.5em;
             border: 1px solid rgb(1, 1, 1);
@@ -54,6 +60,11 @@
             background-color: #00acc1;
         }
 
+        .spoteezer-logo {
+            margin-top: -2em;
+            width: 100px;
+        }
+
         .result {
             margin-top: 3em;
             font-size: 1.5em;
@@ -71,11 +82,18 @@
             font-size: 1em;
             color: #333;
         }
+
+        .github-logo {
+            width: 30px;
+            bottom: 1.0em;        /* position the bottom edge of the element at the bottom of the viewport */
+        }
+
     </style>
 </head>
 
 <body>
     <h1>Spoteezer</h1>
+    <img src="../resources/spoteezer.png" alt="Spoteezer logo" class="spoteezer-logo">
     <form id="form">
         <div>
             <input type="text" id="deezer-link" placeholder="Deezer link" size="80">
@@ -85,6 +103,9 @@
         </div>
     </form>
     <p class="result" id="result"></p>
+    <a href="https://github.com/rayandaod/spoteezer" class="github-link">
+        <img src="../resources/github_logo.png" alt="GitHub logo" class="github-logo">
+    </a>
     <div class="log" id="log"></div>
 
     <script>
@@ -130,7 +151,7 @@
                 .catch((error) => {
                     // If there is an error, log it to the console and set the log element to the error message
                     console.error(error);
-                    logElement.innerHTML = 'An error occurred: ' + error;
+                    logElement.innerHTML = 'An error occurred: ' + error + 'Try again.';
                 });
         });
 
