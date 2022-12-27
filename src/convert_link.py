@@ -3,6 +3,7 @@ import argparse
 import requests
 import pprint
 import spotipy
+import os
 
 from http.client import HTTPSConnection
 
@@ -12,12 +13,7 @@ deezer_api = "/2.0/"
 connection = HTTPSConnection("api.deezer.com")
 
 SpotifyClientCredentials = spotipy.oauth2.SpotifyClientCredentials
-
-with open('./../spotify_credentials.txt', 'r') as f:
-    SPOTIFY_CLIENT_ID = f.readline().strip()
-    SPOTIFY_CLIENT_SECRET = f.readline().strip()
-
-SPOTIFY_CLIENT_CREDS = SpotifyClientCredentials(client_id=SPOTIFY_CLIENT_ID, client_secret=SPOTIFY_CLIENT_SECRET)
+SPOTIFY_CLIENT_CREDS = SpotifyClientCredentials(client_id=os.environ['SPOTIFY_CLIENT_ID'], client_secret=os.environ['SPOTIFY_CLIENT_SECRET'])
 SPOTIFY = spotipy.Spotify(client_credentials_manager=SPOTIFY_CLIENT_CREDS)
 
 SPE_CHARS = ['&', '"', '#', '%', "'", '*', '+', ',', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~', '(', ')']
@@ -77,7 +73,7 @@ def preprocess_string(string):
     for char in SPE_CHARS_WITH_REPLACE:
         if char in string:
             string = string.replace(char, ' ')
-    
+
     return string.lower()
 
 
@@ -88,7 +84,7 @@ def get_S_tracks(track_name=None, artist_name=None, album_name=None):
     query += (' album:' + album_name) if album_name is not None else ''
     print(f'-> Query = {query}\n')
     results = SPOTIFY.search(q=query, limit=1, type='track')
-    
+
     if results['tracks']['total'] == 0:
         print('/!\ No results found with album, searching without album')
         query = ''
@@ -96,14 +92,14 @@ def get_S_tracks(track_name=None, artist_name=None, album_name=None):
         query += (' artist:' + artist_name) if artist_name is not None else ''
         print(f'-> Query = {query}\n')
         results = SPOTIFY.search(q=query, limit=1, type='track')
-        
+
         if results['tracks']['total'] == 0:
             print('/!\ No results found with artist, searching without artist')
             query = ''
             query += ('track:' + track_name) if track_name is not None else ''
             print(f'-> Query = {query}\n')
             results = SPOTIFY.search(q=query, limit=1, type='track')
-            
+
             if results['tracks']['total'] == 0:
                 raise Exception('No results found')
 
@@ -117,14 +113,14 @@ def get_S_albums(album_name=None, artist_name=None):
     query += (' artist:' + artist_name) if artist_name is not None else ''
     print(f'-> Query = {query}\n')
     results = SPOTIFY.search(q=query, limit=1, type='album')
-    
+
     if results['albums']['total'] == 0:
         print('/!\ No results found with artist, searching without artist')
         query = ''
         query += ('album:' + album_name) if album_name is not None else ''
         print(f'-> Query = {query}\n')
         results = SPOTIFY.search(q=query, limit=1, type='album')
-    
+
     print('-> Results found:')
     return query, results
 
@@ -153,7 +149,7 @@ def convert_deezer_to_spotify(deezer_link):
         album_name = preprocess_string(item_info['album']['title'])
         # print(f'Searching for: {track_name} by {artist_name} in {album_name}')
         S_query, S_results = get_S_tracks(track_name, artist_name, album_name)
-    
+
     elif item_type == 'album':
         album_name = preprocess_string(item_info['title'])
         artist_name = preprocess_string(item_info['artist']['name'])
