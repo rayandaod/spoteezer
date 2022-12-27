@@ -5,7 +5,9 @@
 I am currently trying Deezer but have friends and family on Spotify.\
 This repo will regroup some Deezer-to-Spotify utilities (and vice-versa).
 
-[Online demo](rayan.daodnathoo.com/spoteezer)
+[Online demo](http://rayan.daodnathoo.com/spoteezer)
+
+![alt text](resources/convert_link_web.gif)
 
 ## Installation
 
