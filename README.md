@@ -5,7 +5,7 @@
 I am currently trying Deezer but have friends and family on Spotify.\
 This repo will regroup some Deezer-to-Spotify utilities (and vice-versa).
 
-[Online demo](http://rayan.daodnathoo.com/spoteezer)
+[Online demo](https://rayan.daodnathoo.com/spoteezer)
 
 ![alt text](resources/convert_link_web.gif)
 
@@ -47,7 +47,7 @@ Make sure you are in the conda environment and that you are located in the `src`
 
 #### Flask app + HTML webpage
 
-([Online demo](rayan.daodnathoo.com/spoteezer))
+([Online demo](https://rayan.daodnathoo.com/spoteezer))
 
 To run everything locally, you'll need to modify `webpage.html` to communicate with your local Flask server (`127.0.0.1:5000/convert` root).
 
