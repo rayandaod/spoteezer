@@ -128,8 +128,12 @@
 
             // Send a POST request to the server with the Deezer link
             fetch('http://rayandaod.pythonanywhere.com/convert', {
+            // fetch('http://127.0.0.1:5000/convert', {
                 method: 'POST',
-                body: deezerLink,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ deezerLink: deezerLink }),
             })
                 .then((response) => {
                     // When the server responds, parse the response as JSON

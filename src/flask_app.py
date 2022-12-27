@@ -11,8 +11,8 @@ CORS(app)
 @app.route('/convert', methods=['POST'])
 def convert():
     # Get the Deezer link from the request body
-    deezer_link = request.data.decode('utf-8')
-
+    deezer_link = request.get_json()['deezerLink']
+    
     # Convert the Deezer link to a Spotify link using your Python script
     spotify_link = convert_deezer_to_spotify(deezer_link)
 
@@ -25,4 +25,4 @@ def convert():
     return response
 
 if __name__ == '__main__':
-  app.run()
+  app.run(host= '127.0.0.1', debug=True)
