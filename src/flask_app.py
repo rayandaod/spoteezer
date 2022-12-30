@@ -23,9 +23,6 @@ def convert():
     response = Response(json.dumps(response), status=200, mimetype='application/json')
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Content-Type'] = 'application/json'
-
-    # wait 1 second
-    time.sleep(1)
     
     return response
 
