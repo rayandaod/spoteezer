@@ -1,5 +1,4 @@
 import json
-import time
 
 from flask import Flask, request, Response
 from flask_cors import CORS
@@ -9,8 +8,8 @@ from convert_link import convert_deezer_to_spotify
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/convert', methods=['POST'])
-def convert():
+@app.route('/convert', methods=['GET'])
+def get_link():
     # Get the Deezer link from the request body
     deezer_link = request.get_json()['deezerLink']
 

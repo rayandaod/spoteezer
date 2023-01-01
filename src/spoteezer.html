@@ -3,7 +3,7 @@
 
 <head>
     <title>Spoteezer</title>
-    <link rel="icon" type="image/png" href="../resources/spoteezer.png">
+    <link rel="icon" type="image/png" href="../assets/spoteezer.png">
     <style>
         body {
             margin: 0;
@@ -108,7 +108,7 @@
 <body>
     <div id="head">
         <h1>Spoteezer</h1>
-        <img src="../resources/spoteezer.png" alt="Spoteezer logo" id="spoteezer-logo">
+        <img src="../assets/spoteezer.png" alt="Spoteezer logo" id="spoteezer-logo">
     </div>
     
     <div id="center-elems">
@@ -123,7 +123,7 @@
     
 
     <a href="https://github.com/rayandaod/spoteezer">
-        <img src="../resources/github_logo.png" alt="GitHub logo" id="github-logo">
+        <img src="../assets/github_logo.png" alt="GitHub logo" id="github-logo">
     </a>
 
     <script>
@@ -144,10 +144,10 @@
             resultElement.innerHTML = '';
             logElement.innerHTML = '';
 
-            // Send a POST request to the server with the Deezer link
-            fetch('http://rayandaod.pythonanywhere.com/convert', {
+            // Send a GET request to the server with the Deezer link
+            fetch('https://rayandaod.pythonanywhere.com/convert', {
             // fetch('http://127.0.0.1:5000/convert', {
-                method: 'POST',
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
                 },
