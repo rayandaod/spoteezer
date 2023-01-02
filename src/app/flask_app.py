@@ -37,7 +37,7 @@ def get_link():
 
         # Return the result dictionary and a success message
         response = {'result': result_dict,
-                    'log': 'Conversion successful! Click on the link above!'}
+                    'log': 'Conversion successful!'}
 
     except FileNotFoundError:
         response = {'result': init_result_dict,

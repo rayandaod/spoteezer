@@ -23,7 +23,6 @@
         </a>
         <a id="info"></a>
         <a id="more-info"></a>
-        <a id="result-link" href=""></a>
         <div id="logs"></div>
     </div>
     
@@ -42,7 +41,6 @@
 
         const infoElement = document.getElementById('info');
         const moreInfoElement = document.getElementById('more-info');
-        const resultLinkElement = document.getElementById('result-link');
         const logElement = document.getElementById('logs');
 
         function dictToString(dict) {
@@ -69,8 +67,6 @@
             imgElement.src = '';
             infoElement.innerHTML = '';
             moreInfoElement.innerHTML = '';
-            resultLinkElement.href = '';
-            resultLinkElement.innerHTML = '';
             logElement.innerHTML = '';
 
             // Send a GET request to the server with the Deezer link
@@ -104,13 +100,8 @@
                     }
 
                     // Set the info element to the info
-                    infoElement.innerHTML = info;
+                    infoElement.innerHTML = '' + type.charAt(0).toUpperCase() + type.slice(1) + ': <a href="' + spotifyLink + '">' + info + '</a>';
                     moreInfoElement.innerHTML = dictToString(more_info);
-
-                    // Set the result link element to the Spotify link and make it clickable
-                    resultLinkElement.innerHTML = spotifyLink;
-                    resultLinkElement.href = spotifyLink;
-                    resultLinkElement.target = '_blank';
 
                     // Set the log element to the log messages
                     logElement.innerHTML = log;
