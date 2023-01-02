@@ -1,0 +1,116 @@
+body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100%;
+    font-family: sans-serif;
+    background: linear-gradient(to bottom, rgb(25, 25, 25) 50%, rgb(101, 212, 110));
+}
+
+h1 {
+    font-size: 4em;
+    color: rgb(255, 255, 255);
+}
+
+#head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: auto;
+}
+
+#spoteezer-logo {
+    margin-top: -2em;
+    width: 100px;
+}
+
+#center-elems {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4em;
+}
+
+#deezer-link {
+    width: 30em;
+    height: 2em;
+    font-size: 1.5em;
+    border: none;
+    border-radius: 0.5em;
+    padding-left: 1em;
+    padding-right: 1em;
+    margin-bottom: 1em;
+    text-align: center;
+    border: 1px solid #00acc1;
+}
+
+#convert-button {
+    width: 10em;
+    height: 2em;
+    font-size: 1.5em;
+    border: none;
+    border-radius: 0.5em;
+    background-color: #00acc1;
+    color: white;
+    cursor: pointer;
+}
+
+#convert-button:hover {
+    background-color: #00838f;
+}
+
+#results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: auto;
+}
+
+#cover-img {
+    display: none;
+    width: 100px;
+    height: 100px;
+    margin-top: 3em;
+    border-radius: 0.5em;
+}
+
+#info {
+    font-size: 1.5em;
+    font-weight: 600;
+    margin-top: 1em;
+    color: #000000;
+}
+
+#more-info {
+    margin-top: 1em;
+    color: #000000;
+}
+
+#result-link {
+    margin-top: 1em;
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #000000;
+    cursor: pointer;
+}
+
+#result-link:hover {
+    color: #00acc1;
+}
+
+#logs {
+    margin-top: 1em;
+    font-size: 1em;
+    color: #333;
+}
+
+#github-logo {
+    width: 30px;
+    margin-bottom: 1em;
+}

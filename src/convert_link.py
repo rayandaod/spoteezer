@@ -8,6 +8,7 @@ import logging
 from http.client import HTTPSConnection
 
 from helper import *
+from rules import SEARCH_TRIAL_DICT, get_spotify_item_info
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -149,12 +150,16 @@ def search_spotify_item(search_dict, item_type, logger=None):
         found = spotify_results[item_type+'s']['total'] > 0
         
         if not found and trial_index == len(trials) - 1:
-            error_msg = f'Could not find {item_type} in Spotify.'
+            error_msg = f'Could not find {item_type} in Spotify...'
             if logger is not None:
                 logger.info(error_msg)
             raise FileNotFoundError(error_msg)
         else:
             trial_index += 1
+
+    if logger is not None:
+        logger.info(f'Found {item_type} in Spotify!')
+        logger.debug(f'Spotify results = {pp.pformat(spotify_results)}')
     
     return spotify_results
 
@@ -168,7 +173,7 @@ def get_spotify_link_from_results(spotify_results, item_type, logger=None):
     return spotify_link
 
 
-def get_img_link_from_results(spotify_results, item_type, logger=None):
+def get_img_link_from_results(spotify_results, logger=None):
     img_link = get_first_value_with_substr(spotify_results, 'url', 'i.scdn.co')
 
     if logger is not None:
@@ -199,9 +204,18 @@ def convert_deezer_to_spotify(deezer_link, logger=None):
     spotify_link = get_spotify_link_from_results(spotify_results, deezer_item_type, logger=logger)
 
     # Get the image link from the results
-    img_link = get_img_link_from_results(spotify_results, deezer_item_type, logger=logger)
+    img_link = get_img_link_from_results(spotify_results, logger=logger)
 
-    return spotify_link, img_link
+    # Get information about the item
+    info_dict = get_spotify_item_info(spotify_results, deezer_item_type)
+
+    # Build the result dict
+    result_dict = {'spotify_link': spotify_link,
+                   'img_src': img_link,
+                   'info': info_dict,
+                   'type': deezer_item_type}
+
+    return result_dict
 
 
 if __name__ == "__main__":
@@ -211,6 +225,12 @@ if __name__ == "__main__":
 
     deezer_link = args.deezer_link
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    spotify_link = convert_deezer_to_spotify(deezer_link, logger=logger)
-    print(spotify_link)
+    logger.setLevel(logging.INFO)  # Change to logging.DEBUG for more info
+    logger.addHandler(logging.StreamHandler())
+
+    deezer_link = check_deezer_link(deezer_link, logger=logger)
+    if deezer_link is None:
+        raise ValueError('Invalid Deezer link')
+    result_dict = convert_deezer_to_spotify(deezer_link, logger=logger)
+    
+    pp.pprint(result_dict)

@@ -1,21 +1,6 @@
 import requests
 
-
-# List of special characters to remove from the strings, or to replace with a space.
-SPE_CHARS = (['&', '"', '#', '%', "'", '*', '+', ',', '.', '/', ':', ';', '<', '=',
-             '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~', '(', ')'], '')
-SPE_CHARS_WITH_REPLACE = (['  '], ' ')
-
-
-# For each item type, a list of search queries is defined.
-# The order is important, as the first query is the most specific.
-SEARCH_TRIAL_DICT = {'track': [['track', 'artist', 'album'],
-                               ['track', 'artist'],
-                               ['track']],
-                     'album': [['album', 'artist'],
-                               ['album']],
-                     'artist': [['artist']]
-                     }
+from rules import SPE_CHARS, SPE_CHARS_WITH_REPLACE
 
 
 def get_first_value_with_substr(dictionary, key, substring):

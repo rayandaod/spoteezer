@@ -14,35 +14,39 @@ logging.basicConfig(filename='logs.log',
 
 @app.route('/convert', methods=['POST'])
 def get_link():
+    # Initialize the result dictionary
+    init_result_dict = {'spotifyLink': '',
+                   'img_src': '',
+                   'info': {}}
+
     # Get the Deezer link from the request body
     deezer_link = request.get_json()['deezerLink']
 
     # Check if the Deezer link is valid
     deezer_link = check_deezer_link(deezer_link, logger=app.logger)
     if deezer_link is None:
-      msg = 'Invalid Deezer link. Please try again!'
-      app.logger.error(msg)
-      return {'spotifyLink': '',
-              'img_src': '',
-              'log': msg}
+        msg = 'Invalid Deezer link. Please try again!'
+        app.logger.error(msg)
+        return {'result': init_result_dict,
+                'log': msg}
 
     try:
-      # Convert the Deezer link to a Spotify link using your Python script
-      spotify_link, img_link = convert_deezer_to_spotify(deezer_link, logger=app.logger)
-      response = {'spotifyLink': spotify_link,
-                  'img_src': img_link,
-                  'log': 'Conversion successful! Click on the link above!'}
+        # Convert using our script
+        result_dict = convert_deezer_to_spotify(
+            deezer_link, logger=app.logger)
+
+        # Return the result dictionary and a success message
+        response = {'result': result_dict,
+                    'log': 'Conversion successful! Click on the link above!'}
 
     except FileNotFoundError:
-      response = {'spotifyLink': '',
-                  'img_src': '',
-                  'log': 'Could not find track in Spotify!'}
+        response = {'result': init_result_dict,
+                    'log': 'Could not find track in Spotify...'}
 
     except Exception as e:
-      app.logger.error(e)
-      response = {'spotifyLink': '',
-                  'img_src': '',
-                  'log': 'Something went wrong!'}
+        app.logger.error(e)
+        response = {'result': init_result_dict,
+                    'log': f'Something went wrong. ({e}) Please try again!'}
 
     return response
 
