@@ -45,16 +45,21 @@ def get_first_value_with_substr(dictionary, key, substring):
     return None
 
 
-def get_final_url(url):
+def get_final_url(url, logger=None):
     """
     Get the final url of a link, i.e after redirections.
     """
     responses = requests.get(url)
 
     if len(responses.history) > 0:
-        return responses.history[-1].url
+        final_url = responses.history[-1].url
     else:
-        return responses.url
+        final_url = responses.url
+
+    if logger is not None:
+        logger.info(f'Final URL = {final_url}')
+    
+    return final_url
 
 
 def preprocess_string(string):

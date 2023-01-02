@@ -1,29 +1,41 @@
-import json
+import logging
 
-from flask import Flask, request, Response
+from flask import Flask, request
 from flask_cors import CORS
 
-from convert_link import convert_deezer_to_spotify
+from convert_link import convert_deezer_to_spotify, check_deezer_link
 
 app = Flask(__name__)
 CORS(app)
+logging.basicConfig(filename='logs.log',
+level=logging.DEBUG,
+format='%(asctime)s %(levelname)s: %(message)s')
 
-@app.route('/convert', methods=['GET'])
+@app.route('/convert', methods=['POST'])
 def get_link():
     # Get the Deezer link from the request body
     deezer_link = request.get_json()['deezerLink']
 
-    # Convert the Deezer link to a Spotify link using your Python script
-    spotify_link = convert_deezer_to_spotify(deezer_link)
+    # Check if the Deezer link is valid
+    deezer_link = check_deezer_link(deezer_link, logger=app.logger)
+    if deezer_link is None:
+      msg = 'Invalid Deezer link. Please try again!'
+      app.logger.error(msg)
+      return {'spotifyLink': '', 'log': msg}
 
-    # Return a JSON response with the Spotify link and any relevant log messages
-    response = { 'spotifyLink': spotify_link, 'log': 'Conversion successful!' }
+    try:
+      # Convert the Deezer link to a Spotify link using your Python script
+      spotify_link = convert_deezer_to_spotify(deezer_link, logger=app.logger)
+      response = { 'spotifyLink': spotify_link, 'log': 'Conversion successful! Click on the link above!' }
+    
+    except FileNotFoundError:
+      response = { 'spotifyLink': '', 'log': 'Could not find track in Spotify!' }
 
-    response = Response(json.dumps(response), status=200, mimetype='application/json')
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Content-Type'] = 'application/json'
+    except Exception as e:
+      app.logger.error(e)
+      response = { 'spotifyLink': '', 'log': 'Something went wrong!' }
     
     return response
 
 if __name__ == '__main__':
-  app.run(host= '127.0.0.1:5000', debug=True)
+  app.run(host='127.0.0.1', port=8080, debug=True)
