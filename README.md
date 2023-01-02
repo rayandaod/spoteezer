@@ -1,13 +1,13 @@
 # Spoteezer
 
-<img src="resources/spoteezer.png" width="100" height="100">
+<img src="assets/spoteezer.png" width="100" height="100">
 
 I am currently trying Deezer but have friends and family on Spotify.\
 This repo will regroup some Deezer-to-Spotify utilities (and vice-versa).
 
 [Online demo](https://rayan.daodnathoo.com/spoteezer)
 
-![alt text](resources/convert_link_web.gif)
+![alt text](assets/convert_link_web.gif)
 
 ## Installation
 
@@ -58,7 +58,7 @@ Then:
 
 #### MacOS shortcut (Apple Shortcuts)
 
-![alt text](resources/convert_link_shortcut.gif)
+![alt text](assets/convert_link_shortcut.gif)
 
 To do so, install the following shortcut and modify it to match your paths:
 https://www.icloud.com/shortcuts/562d373485a84d6a9ac64e3df6bd19d1
