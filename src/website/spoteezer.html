@@ -45,6 +45,17 @@
         const resultLinkElement = document.getElementById('result-link');
         const logElement = document.getElementById('logs');
 
+        function dictToString(dict) {
+            let str = '';
+            for (const key in dict) {
+                if (dict.hasOwnProperty(key)) {
+                    const capitalizedKey = key.charAt(0).toUpperCase() + key.slice(1);
+                    str += '<b>' + capitalizedKey + '</b>: ' + dict[key] + ' ';
+                }
+            }
+            return str;
+        }
+
         // Add an event listener to the form to handle the submission
         buttonElement.addEventListener('click', (event) => {
             event.preventDefault();
@@ -94,7 +105,7 @@
 
                     // Set the info element to the info
                     infoElement.innerHTML = info;
-                    moreInfoElement.innerHTML = JSON.stringify(more_info);
+                    moreInfoElement.innerHTML = dictToString(more_info);
 
                     // Set the result link element to the Spotify link and make it clickable
                     resultLinkElement.innerHTML = spotifyLink;

@@ -1,6 +1,6 @@
 # Spoteezer
 
-<img src="src/website/assets/spoteezer.png" width="100" height="100">
+<img src="src/website/spoteezer_assets/spoteezer.png" width="100" height="100">
 
 I am currently trying Deezer but have friends and family on Spotify.\
 This repo will regroup some Deezer-to-Spotify utilities (and vice-versa).
