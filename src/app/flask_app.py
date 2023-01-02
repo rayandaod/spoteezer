@@ -7,7 +7,7 @@ from convert_link import convert_deezer_to_spotify, check_deezer_link
 
 app = Flask(__name__)
 CORS(app)
-logging.basicConfig(filename='logs.log',
+logging.basicConfig(filename='./../logs.log',
                     level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s: %(message)s')
 
