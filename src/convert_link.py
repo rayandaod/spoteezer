@@ -168,6 +168,15 @@ def get_spotify_link_from_results(spotify_results, item_type, logger=None):
     return spotify_link
 
 
+def get_img_link_from_results(spotify_results, item_type, logger=None):
+    img_link = get_first_value_with_substr(spotify_results, 'url', 'i.scdn.co')
+
+    if logger is not None:
+        logger.info(f'Image link = {img_link}')
+
+    return img_link
+
+
 def convert_deezer_to_spotify(deezer_link, logger=None):
 
     # ----- DEEZER -----
@@ -189,7 +198,10 @@ def convert_deezer_to_spotify(deezer_link, logger=None):
     # Get the Spotify link from the results
     spotify_link = get_spotify_link_from_results(spotify_results, deezer_item_type, logger=logger)
 
-    return spotify_link
+    # Get the image link from the results
+    img_link = get_img_link_from_results(spotify_results, deezer_item_type, logger=logger)
+
+    return spotify_link, img_link
 
 
 if __name__ == "__main__":

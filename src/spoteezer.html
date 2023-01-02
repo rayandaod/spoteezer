@@ -27,7 +27,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            margin-top: 4em;
+            margin-top: auto;
         }
 
         #spoteezer-logo {
@@ -79,8 +79,16 @@
             margin-bottom: auto;
         }
 
-        #result-link {
+        #cover-img {
+            display: none;
+            width: 100px;
+            height: 100px;
             margin-top: 3em;
+            border-radius: 0.5em;
+        }
+
+        #result-link {
+            margin-top: 1em;
             font-size: 1.5em;
             font-weight: bold;
             color: #000000;
@@ -91,8 +99,8 @@
             color: #00acc1;
         }
 
-        #log {
-            margin-top: 0.5em;
+        #logs {
+            margin-top: 1em;
             font-size: 1em;
             color: #333;
         }
@@ -117,7 +125,10 @@
     </div>
     
     <div id="results">
-        <p id="result-link"></p>
+        <a id="cover-link" href="">
+            <img id="cover-img" src="" alt="Cover">
+        </a>
+        <a id="result-link" href=""></a>
         <div id="logs"></div>
     </div>
     
@@ -130,7 +141,9 @@
         const form = document.getElementById('center-elems');
         const deezerLinkInput = document.getElementById('deezer-link');
         const buttonElement = document.getElementById('convert-button');
-        const resultElement = document.getElementById('result-link');
+        const imgElement = document.getElementById('cover-img');
+        const imgLinkElement = document.getElementById('cover-link');
+        const resultLinkElement = document.getElementById('result-link');
         const logElement = document.getElementById('logs');
 
         // Add an event listener to the form to handle the submission
@@ -141,7 +154,10 @@
             const deezerLink = deezerLinkInput.value;
 
             // Clear the result and log elements
-            resultElement.innerHTML = '';
+            imgElement.style.display = 'none'
+            imgLinkElement.href = '';
+            resultLinkElement.href = '';
+            resultLinkElement.innerHTML = '';
             logElement.innerHTML = '';
 
             // Send a GET request to the server with the Deezer link
@@ -160,12 +176,20 @@
                 .then((data) => {
                     // Get the Spotify link and log messages from the response data
                     const spotifyLink = data.spotifyLink;
+                    const img_src = data.img_src;
                     const log = data.log;
 
+                    // Set the image element to the cover
+                    if (img_src != '') {
+                        imgElement.style.display = 'block';
+                        imgElement.src = img_src;
+                        imgLinkElement.href = spotifyLink;
+                    }
+
                     // Set the result element to the Spotify link and make it clickable
-                    resultElement.innerHTML = spotifyLink;
-                    resultElement.href = spotifyLink;
-                    resultElement.target = '_blank';
+                    resultLinkElement.innerHTML = spotifyLink;
+                    resultLinkElement.href = spotifyLink;
+                    resultLinkElement.target = '_blank';
 
                     // Set the log element to the log messages
                     logElement.innerHTML = log;
@@ -175,10 +199,6 @@
                     console.error(error);
                     logElement.innerHTML = 'An error occurred: ' + error + ' Try again.';
                 });
-        });
-
-        resultElement.addEventListener("click", (event) => {
-            window.open(event.target.innerHTML, "_blank");
         });
 
     </script>
