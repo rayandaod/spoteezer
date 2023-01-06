@@ -25,66 +25,56 @@ SPOTIFY_CLIENT_CREDS = SpotifyClientCredentials(
 SPOTIFY = spotipy.Spotify(client_credentials_manager=SPOTIFY_CLIENT_CREDS)
 
 
-def check_deezer_link(deezer_link, logger=None):
+def check_deezer_link(deezer_base_link, logger=None):
     """
     Check if the Deezer link is valid.
     """
 
-    if deezer_link is None:
-        return None
+    if deezer_base_link is None:
+        raise ValueError('Link is None')
 
     # Remove whitespace and replace http with https
-    deezer_link = deezer_link.strip()
-    deezer_link = deezer_link.replace('http://', 'https://')
+    deezer_base_link = deezer_base_link.strip()
+    deezer_base_link = deezer_base_link.replace('http://', 'https://')
     
     # Get the final link after redirections
-    deezer_link = get_final_url(deezer_link, logger=logger)
+    deezer_link = get_final_url(deezer_base_link, logger=logger)
 
     if deezer_link.startswith('https://www.deezer.com/'):
         return deezer_link
 
-    return None
+    else:
+        raise ValueError('Invalid Deezer link')
 
 
-def get_deezer_data_from_url(url, logger=None):
-    """
-    Get the data from the Deezer API.
-    """
-
-    connection.request("GET", url)
-    response = connection.getresponse()
-    return json.loads(response.read().decode("utf-8"))
-
-
-def get_deezer_item_type_id(url, logger=None):
-    """
-    Get the item type and id from the Deezer link.
-    The item type is a string that can be either 'track', 'album' or 'artist'.
-    The item id is the id of the item in Deezer's database.
-    """
-
-    item_type = url.split('/')[-2]
-    item_id = int(url.split('/')[-1].split('?')[0])
-
-    if logger is not None:
-        logger.info(f'Deezer item type = {item_type}')
-        logger.info(f'Deezer item id = {item_id}')
-
-    return item_type, item_id
-
-
-def get_raw_deezer_item_info(support, id, logger=None):
+def get_raw_deezer_item_info(deezer_link, logger=None):
     """
     Get the item info from the Deezer API.
     The support is a string that can be either 'track', 'album' or 'artist'.
     The id is the id of the item in Deezer's database.
     """
 
-    url = deezer_api + "%s/%d" % (support, id)
-    return get_deezer_data_from_url(url)
+    # Get the Deezer item type and id
+    deezer_item_type = deezer_link.split('/')[-2]
+    deezer_item_id = int(deezer_link.split('/')[-1].split('?')[0])
+
+    if logger is not None:
+        logger.info(f'Deezer item type = {deezer_item_type}')
+        logger.info(f'Deezer item id = {deezer_item_id}')
+
+    # Reconstruct a clean link
+    deezer_link_clean = deezer_api + "%s/%d" % (deezer_item_type, deezer_item_id)
+
+    if logger is not None:
+        logger.info(f'Deezer link clean = {deezer_link_clean}')
+
+    # Get the data from the Deezer API
+    connection.request("GET", deezer_link_clean)
+    response = connection.getresponse()
+    return json.loads(response.read().decode("utf-8")), deezer_item_type
 
 
-def get_deezer_item_info(deezer_item_type, deezer_item_info, logger=None):
+def get_deezer_item_info_for_search(deezer_item_type, deezer_item_info, logger=None):
     if deezer_item_type == 'track':
         deezer_item_info = {
             'track': preprocess_string(deezer_item_info['title']),
@@ -186,14 +176,11 @@ def convert_deezer_to_spotify(deezer_link, logger=None):
 
     # ----- DEEZER -----
 
-    # Parse the item type and id from the final deezer link
-    deezer_item_type, deezer_item_id = get_deezer_item_type_id(deezer_link, logger=logger)
-
     # Get the item info from the Deezer API
-    deezer_raw_item_info = get_raw_deezer_item_info(deezer_item_type, deezer_item_id, logger=logger)
+    deezer_raw_item_info, deezer_item_type = get_raw_deezer_item_info(deezer_link, logger=logger)
 
     # Get the search dict to search for the item in Spotify
-    deezer_item_info = get_deezer_item_info(deezer_item_type, deezer_raw_item_info, logger=logger)
+    deezer_item_info = get_deezer_item_info_for_search(deezer_item_type, deezer_raw_item_info, logger=logger)
 
     # ----- SPOTIFY -----
     
@@ -229,8 +216,7 @@ if __name__ == "__main__":
     logger.addHandler(logging.StreamHandler())
 
     deezer_link = check_deezer_link(deezer_link, logger=logger)
-    if deezer_link is None:
-        raise ValueError('Invalid Deezer link')
     result_dict = convert_deezer_to_spotify(deezer_link, logger=logger)
     
+    print()
     pp.pprint(result_dict)
