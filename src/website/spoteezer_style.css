@@ -20,7 +20,7 @@ h1 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-top: auto;
+    margin-top: 1em;
 }
 
 #spoteezer-logo {
@@ -33,7 +33,7 @@ h1 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-top: 4em;
+    margin-top: auto;
 }
 
 #deezer-link {
@@ -69,6 +69,7 @@ h1 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    margin-top: auto;
     margin-bottom: auto;
 }
 
