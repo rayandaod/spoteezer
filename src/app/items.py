@@ -71,7 +71,7 @@ class Item():
 
         elif self.type == 'artist':
             if type(self) == DeezerItem:
-                info_simple['artist'] = self.raw_info['artist']['name']
+                info_simple['artist'] = self.raw_info['name']
             else:
                 info_simple['artist'] = self.raw_info['name']
 
