@@ -19,6 +19,9 @@ def get_init_item(link, logger=None):
         raise ValueError(
             f'Could not determine between Deezer and Spotify from link {link}...')
 
+    if logger is not None:
+        logger.info(f'Initialized {platform} item from link {link}')
+
     return item, platform
 
 

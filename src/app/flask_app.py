@@ -3,7 +3,8 @@ import logging
 from flask import Flask, request
 from flask_cors import CORS
 
-from convert_link import get_spotify_item, get_init_item
+from convert_link import get_init_item, convert_item
+from helper import extract_web_info
 
 app = Flask(__name__)
 CORS(app)
@@ -14,34 +15,24 @@ logging.basicConfig(filename='logs.log',
 
 @app.route('/convert', methods=['POST'])
 def convert():
-    # Initialize the result dictionary
-    init_result_dict = {'initLink': '',
-                        'resultLink': '',
-                        'img_src': '',
-                        'info': {}}
-
-    # Get the Deezer link from the request body
+    # Get the init link from the request body
     init_link = request.get_json()['initLink']
     
     try:
-        # Get the item from the link
-        item = get_init_item(init_link, logger=app.logger)
-
-        # Convert using our script
-        result_dict = get_spotify_item(
-            init_link, logger=app.logger)
+        init_item, _ = get_init_item(init_link, logger=app.logger)
+        result_item, _ = convert_item(init_item, logger=app.logger)
 
         # Return the result dictionary and a success message
-        response = {'result': result_dict,
+        response = {'result': result_item.web_info,
                     'log': 'Conversion successful!'}
 
     except FileNotFoundError:
-        response = {'result': init_result_dict,
+        response = {'result': extract_web_info(),
                     'log': 'Could not find track in Spotify...'}
 
     except Exception as e:
         app.logger.error(e)
-        response = {'result': init_result_dict,
+        response = {'result': extract_web_info(),
                     'log': f'Something went wrong. ({e}) Please try again!'}
 
     return response

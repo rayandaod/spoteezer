@@ -1,5 +1,6 @@
 import requests
 
+
 # List of special characters to remove from the strings, or to replace with a space.
 SPE_CHARS = (['&', '"', '#', '%', "'", '*', '+', ',', '.', '/', ':', ';', '<', '=',
              '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~', '(', ')'], '')
@@ -50,3 +51,19 @@ def preprocess_string(string):
             string = string.replace(char, SPE_CHARS_WITH_REPLACE[1])
 
     return string.lower()
+
+
+def extract_web_info(item=None, init=False, logger=None):
+    web_info = {'result_link': '',
+                'platform': '',
+                'img_src': '',
+                'info': {},
+                'type': ''}
+    if item:
+        web_info = {'result_link': item.link,
+                    'platform': item.platform,
+                    'img_src': item.img_link,
+                    'info': item.info_simple,
+                    'type': item.type}
+
+    return web_info

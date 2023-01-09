@@ -36,7 +36,7 @@ h1 {
     margin-top: auto;
 }
 
-#deezer-link {
+#init-link {
     width: 30em;
     height: 2em;
     font-size: 1.5em;
@@ -71,13 +71,26 @@ h1 {
     justify-content: center;
     margin-top: auto;
     margin-bottom: auto;
+    border: 1px solid #000000;
+    border-width: 0;
+    border-radius: 0.5em;
+    padding: 1em;
 }
+
+
+#platform {
+    display: none;
+    position: relative;
+    width: 1.5em;
+    height: 1.5em;
+}
+
 
 #cover-img {
     display: none;
+    margin-top: 1em;
     width: 100px;
     height: 100px;
-    margin-top: 2em;
     border-radius: 0.5em;
 }
 

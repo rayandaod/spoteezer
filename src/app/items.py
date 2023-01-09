@@ -4,7 +4,7 @@ import requests
 
 from urllib.parse import urlparse, quote
 
-from helper import get_first_value_with_substr, preprocess_string
+from helper import get_first_value_with_substr, preprocess_string, extract_web_info
 from config import DEEZER_CONNECTION, DEEZER_API, SPOTIFY
 
 
@@ -83,16 +83,10 @@ class Item():
         return img_link
 
 
-    def extract_web_info(self, logger=None):
-        web_info = {'resultLink': self.link,
-                    'img_src': self.img_link,
-                    'info': self.info_simple,
-                    'type': self.type}
-
-        return web_info
-
-
 class DeezerItem(Item):
+
+    platform = 'Deezer'
+
     def __init__(self, link=None, search_params=None, item_type=None, logger=None):
         self.logger = logger
 
@@ -113,7 +107,7 @@ class DeezerItem(Item):
         
         self.img_link = self.extract_img_link('cover_medium', 'cover')
         self.info_simple = self.extract_info_simple(artists_key='contributors', item_name_key='title')
-        self.web_info = self.extract_web_info()
+        self.web_info = extract_web_info(self)
 
     
     def get_raw_info_from_id(self, id, _type):
@@ -186,6 +180,9 @@ class DeezerItem(Item):
 
 
 class SpotifyItem(Item):
+
+    platform = 'Spotify'
+
     def __init__(self, link=None, search_params=None, item_type=None, logger=None):
         self.logger = logger
 
@@ -223,7 +220,7 @@ class SpotifyItem(Item):
 
         self.img_link = self.extract_img_link('url', 'i.scdn.co')
         self.info_simple = self.extract_info_simple(artists_key='artists', item_name_key='name')
-        self.web_info = self.extract_web_info()
+        self.web_info = extract_web_info(self)
 
 
     def get_raw_info_from_id(self, id, _type):

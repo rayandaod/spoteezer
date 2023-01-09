@@ -13,11 +13,12 @@
     </div>
     
     <div id="center-elems">
-        <input id="deezer-link" placeholder="Deezer link (track, album, or artist)">
-        <button id="convert-button">Convert to Spotify</button>
+        <input id="init-link" placeholder="Deezer or Spotify link (track, album, or artist)">
+        <button id="convert-button">Convert</button>
     </div>
     
     <div id="results">
+        <img src="" id="platform"/>
         <a id="cover-link" href="">
             <img id="cover-img" src="" alt="Cover">
         </a>
@@ -33,7 +34,7 @@
 
     <script>
         const form = document.getElementById('center-elems');
-        const deezerLinkInput = document.getElementById('deezer-link');
+        const initLinkInput = document.getElementById('init-link');
         const buttonElement = document.getElementById('convert-button');
 
         const imgElement = document.getElementById('cover-img');
@@ -58,8 +59,8 @@
         buttonElement.addEventListener('click', (event) => {
             event.preventDefault();
 
-            // Get the Deezer link from the input
-            const deezerLink = deezerLinkInput.value;
+            // Get the init link from the input
+            const initLink = initLinkInput.value;
 
             // Clear the result and log elements
             imgElement.style.display = 'none'
@@ -69,22 +70,23 @@
             moreInfoElement.innerHTML = '';
             logElement.innerHTML = '';
 
-            // Send a GET request to the server with the Deezer link
-            fetch('https://rayandaod.pythonanywhere.com/convert', {
-            // fetch('http://127.0.0.1:8080/convert', {
+            // Send a GET request to the server with the init link
+            // fetch('https://rayandaod.pythonanywhere.com/convert', {
+            fetch('http://127.0.0.1:8080/convert', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ deezerLink: deezerLink }),
+                body: JSON.stringify({ initLink: initLink }),
             })
                 .then((response) => {
                     // When the server responds, parse the response as JSON
                     return response.json();
                 })
                 .then((data) => {
-                    // Get the Spotify link and log messages from the response data
-                    const spotifyLink = data.result.spotify_link;
+                    // Get the result link and log messages from the response data
+                    const resultLink = data.result.result_link;
+                    const platform = data.result.platform;
                     const img_src = data.result.img_src;
                     const type = data.result.type;
                     const info = data.result.info[type];
@@ -96,12 +98,25 @@
                     if (img_src != '') {
                         imgElement.style.display = 'block';
                         imgElement.src = img_src;
-                        imgLinkElement.href = spotifyLink;
+                        imgLinkElement.href = resultLink;
                     }
 
+                    // Set the platform element to the platform
+                    if (platform == 'Deezer') {
+                        document.getElementById('platform').src = 'spoteezer_assets/deezer_logo.png';
+                    } else if (platform == 'Spotify') {
+                        document.getElementById('platform').src = 'spoteezer_assets/spotify_logo.png';
+                    }
+
+                    // Display the platform logo
+                    document.getElementById('platform').style.display = 'block';
+
                     // Set the info element to the info
-                    infoElement.innerHTML = '' + type.charAt(0).toUpperCase() + type.slice(1) + ': <a href="' + spotifyLink + '">' + info + '</a>';
+                    infoElement.innerHTML = '' + type.charAt(0).toUpperCase() + type.slice(1) + ': <a href="' + resultLink + '">' + info + '</a>';
                     moreInfoElement.innerHTML = dictToString(more_info);
+
+                    // Display the result div border
+                    document.getElementById('results').style.borderWidth = '1px';
 
                     // Set the log element to the log messages
                     logElement.innerHTML = log;
