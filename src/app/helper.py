@@ -1,6 +1,9 @@
 import requests
 
-from rules import SPE_CHARS, SPE_CHARS_WITH_REPLACE
+# List of special characters to remove from the strings, or to replace with a space.
+SPE_CHARS = (['&', '"', '#', '%', "'", '*', '+', ',', '.', '/', ':', ';', '<', '=',
+             '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~', '(', ')'], '')
+SPE_CHARS_WITH_REPLACE = (['  '], ' ')
 
 
 def get_first_value_with_substr(dictionary, key, substring):
@@ -28,23 +31,6 @@ def get_first_value_with_substr(dictionary, key, substring):
             if result is not None:
                 return result
     return None
-
-
-def get_final_link(link, logger=None):
-    """
-    Get the final link of a link, i.e after redirections.
-    """
-    responses = requests.get(link)
-
-    if len(responses.history) > 0:
-        final_link = responses.history[-1].url
-    else:
-        final_link = responses.url
-
-    if logger is not None:
-        logger.info(f'Final link = {final_link}')
-    
-    return final_link
 
 
 def preprocess_string(string):

@@ -3,7 +3,7 @@ import logging
 from flask import Flask, request
 from flask_cors import CORS
 
-from convert_link import convert_deezer_to_spotify, check_deezer_link
+from convert_link import get_spotify_item, get_init_item
 
 app = Flask(__name__)
 CORS(app)
@@ -13,27 +13,23 @@ logging.basicConfig(filename='logs.log',
 
 
 @app.route('/convert', methods=['POST'])
-def get_link():
+def convert():
     # Initialize the result dictionary
-    init_result_dict = {'spotifyLink': '',
-                   'img_src': '',
-                   'info': {}}
+    init_result_dict = {'initLink': '',
+                        'resultLink': '',
+                        'img_src': '',
+                        'info': {}}
 
     # Get the Deezer link from the request body
-    deezer_link = request.get_json()['deezerLink']
-
-    # Check if the Deezer link is valid
-    deezer_link = check_deezer_link(deezer_link, logger=app.logger)
-    if deezer_link is None:
-        msg = 'Invalid Deezer link. Please try again!'
-        app.logger.error(msg)
-        return {'result': init_result_dict,
-                'log': msg}
-
+    init_link = request.get_json()['initLink']
+    
     try:
+        # Get the item from the link
+        item = get_init_item(init_link, logger=app.logger)
+
         # Convert using our script
-        result_dict = convert_deezer_to_spotify(
-            deezer_link, logger=app.logger)
+        result_dict = get_spotify_item(
+            init_link, logger=app.logger)
 
         # Return the result dictionary and a success message
         response = {'result': result_dict,
