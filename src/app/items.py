@@ -79,6 +79,7 @@ class Item():
 
 
     def extract_img_link(self, key, substr=None):
+        pp.pprint(self.raw_info)
         img_link = get_first_value_with_substr(self.raw_info, key, substr)
         return img_link
 
@@ -106,6 +107,9 @@ class DeezerItem(Item):
             self.link = self.raw_info['link']
         
         self.img_link = self.extract_img_link('cover_medium', 'cover')
+        if self.img_link is None:
+            self.img_link = self.raw_info['picture_medium']
+
         self.info_simple = self.extract_info_simple(artists_key='contributors', item_name_key='title')
         self.web_info = extract_web_info(self)
 
