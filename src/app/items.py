@@ -14,12 +14,12 @@ pp = pprint.PrettyPrinter(indent=4)
 # The key is the type of the item (track, album, artist)
 # The value is a list of lists of search terms, in order of priority
 SEARCH_PARAM_TRIALS_DICT = {'track': [['track', 'artist', 'album'],
-                                    ['track', 'artist'],
-                                    ['track']],
-                          'album': [['album', 'artist'],
-                                    ['album']],
-                          'artist': [['artist']]
-                          }
+                                      ['track', 'artist'],
+                                      ['track']],
+                            'album': [['album', 'artist'],
+                                      ['album']],
+                            'artist': [['artist']]
+                            }
 
 
 class Item():
@@ -39,7 +39,6 @@ class Item():
         else:
             self.link = responses.url
 
-    
     def extract_info_simple(self, artists_key=None, item_name_key=None):
         """
         Get the specified information from the Spotify results.
@@ -77,7 +76,6 @@ class Item():
 
         return info_simple
 
-
     def extract_img_link(self, key, substr=None):
         pp.pprint(self.raw_info)
         img_link = get_first_value_with_substr(self.raw_info, key, substr)
@@ -105,15 +103,15 @@ class DeezerItem(Item):
             self.raw_info = self.get_raw_info_from_results(results)
             self.id = self.raw_info['id']
             self.link = self.raw_info['link']
-        
+
         self.img_link = self.extract_img_link('cover_medium', 'cover')
         if self.img_link is None:
             self.img_link = self.raw_info['picture_medium']
 
-        self.info_simple = self.extract_info_simple(artists_key='contributors', item_name_key='title')
+        self.info_simple = self.extract_info_simple(
+            artists_key='contributors', item_name_key='title')
         self.web_info = extract_web_info(self)
 
-    
     def get_raw_info_from_id(self, id, _type):
         link_clean = DEEZER_API + f"{_type}/{id}"
 
@@ -127,11 +125,9 @@ class DeezerItem(Item):
 
         return json.loads(response.read().decode("utf-8"))
 
-
     def get_raw_info_from_results(self, results):
         return results['data'][0]
 
-    
     def get_search_params(self, raw_info):
         if self.type == 'track':
             search_params = {
@@ -153,11 +149,11 @@ class DeezerItem(Item):
 
         else:
             raise ValueError('Invalid Deezer item type')
-        
+
         return search_params
 
-
     # TODO: Add search trials
+
     def search(self, search_params, _type):
         # Get the search trial list
         search_param_trials = SEARCH_PARAM_TRIALS_DICT[_type]
@@ -165,22 +161,23 @@ class DeezerItem(Item):
         # Try each search trial
         for search_trial in search_param_trials:
             # Construct the search query
-            query = ''.join([f'{key}:"{value}"' for key, value in search_params.items()])
+            query = ''.join([f'{key}:"{value}"' for key,
+                            value in search_params.items()])
             query = quote(query)
 
             # Make the search request
-            DEEZER_CONNECTION.request("GET", f"{DEEZER_API}search/{_type}?q={query}&order=RANKING&limit=1")
+            DEEZER_CONNECTION.request(
+                "GET", f"{DEEZER_API}search/{_type}?q={query}&order=RANKING&limit=1")
             response = DEEZER_CONNECTION.getresponse()
 
             # Check if the response is valid
             if response.status != 200:
                 raise ValueError('Invalid response from Deezer API')
-            
+
             # Get the response data
             data = json.loads(response.read().decode("utf-8"))
 
         return data
-
 
 
 class SpotifyItem(Item):
@@ -223,9 +220,9 @@ class SpotifyItem(Item):
                                                     substring=self.type)
 
         self.img_link = self.extract_img_link('url', 'i.scdn.co')
-        self.info_simple = self.extract_info_simple(artists_key='artists', item_name_key='name')
+        self.info_simple = self.extract_info_simple(
+            artists_key='artists', item_name_key='name')
         self.web_info = extract_web_info(self)
-
 
     def get_raw_info_from_id(self, id, _type):
         # Get the info from the Spotify API using the id and type
@@ -241,10 +238,8 @@ class SpotifyItem(Item):
         else:
             raise ValueError('Invalid Spotify item type')
 
-    
     def get_raw_info_from_results(self, results, _type):
         return results[f'{_type}s']['items'][0]
-
 
     def get_search_params(self, raw_info):
         if self.type == 'track':
@@ -269,7 +264,6 @@ class SpotifyItem(Item):
             raise ValueError('Invalid Spotify item type')
 
         return search_params
-    
 
     def search(self):
         """

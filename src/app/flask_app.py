@@ -17,7 +17,7 @@ logging.basicConfig(filename='logs.log',
 def convert():
     # Get the init link from the request body
     init_link = request.get_json()['initLink']
-    
+
     try:
         init_item, _ = get_init_item(init_link, logger=app.logger)
         result_item, _ = convert_item(init_item, logger=app.logger)

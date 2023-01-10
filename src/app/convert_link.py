@@ -27,10 +27,12 @@ def get_init_item(link, logger=None):
 
 def convert_item(init_item: Item, logger=None):
     if type(init_item) == DeezerItem:
-        item = SpotifyItem(search_params=init_item.search_params, item_type=init_item.type, logger=logger)
+        item = SpotifyItem(search_params=init_item.search_params,
+                           item_type=init_item.type, logger=logger)
         platform = 'Spotify'
     elif type(init_item) == SpotifyItem:
-        item = DeezerItem(search_params=init_item.search_params, item_type=init_item.type, logger=logger)
+        item = DeezerItem(search_params=init_item.search_params,
+                          item_type=init_item.type, logger=logger)
         platform = 'Deezer'
 
     return item, platform
@@ -47,7 +49,7 @@ if __name__ == "__main__":
     logger.setLevel(logging.INFO)  # Change to logging.DEBUG for more info
     logger.addHandler(logging.StreamHandler())
 
-    # Creat the item from the link and convert it
+    #  Creat the item from the link and convert it
     init_item, init_platform = get_init_item(init_link, logger=logger)
     result_item, result_platform = convert_item(init_item, logger=logger)
 
