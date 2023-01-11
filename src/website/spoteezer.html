@@ -14,20 +14,15 @@
     </div>
     
     <div id="center-elems">
-        <input id="init-link" placeholder="Deezer or Spotify link (track, album, or artist)">
+        <input id="input-url" placeholder="Deezer or Spotify URL (track, album, or artist)">
         <button id="convert-button">Convert</button>
     </div>
-    
-    <div id="results">
-        <img src="" id="platform"/>
-        <a id="cover-link" href="">
-            <img id="cover-img" src="" alt="Cover">
-        </a>
-        <a id="info"></a>
-        <a id="more-info"></a>
-        <div id="logs"></div>
-    </div>
-    
+
+    <iframe id="init-item" src="" width="80%" height="380" frameborder="0" allowtransparency="false" allow="encrypted-media; clipboard-write"></iframe>
+    <iframe id="result-item" src="" width="80%" height="380" frameBorder="0" allowfullscreen="false" allow="encrypted-media; clipboard-write"></iframe>
+    <button id="convert-button" onclick="copyToClipboard()">Copy link</button>
+
+    <div id="logs"></div>
 
     <a href="https://github.com/rayandaod/spoteezer">
         <img src="spoteezer_assets/github_logo.png" alt="GitHub logo" id="github-logo">
@@ -35,89 +30,67 @@
 
     <script>
         const form = document.getElementById('center-elems');
-        const initLinkInput = document.getElementById('init-link');
+        const inputURL = document.getElementById('input-url');
         const buttonElement = document.getElementById('convert-button');
+        
+        const initItem = document.getElementById('init-item');
+        init_url = '';
 
-        const imgElement = document.getElementById('cover-img');
-        const imgLinkElement = document.getElementById('cover-link');
-
-        const infoElement = document.getElementById('info');
-        const moreInfoElement = document.getElementById('more-info');
+        const resultItem = document.getElementById('result-item');
+        result_url = '';
+        
         const logElement = document.getElementById('logs');
 
-        function dictToString(dict) {
-            let str = '';
-            for (const key in dict) {
-                if (dict.hasOwnProperty(key)) {
-                    const capitalizedKey = key.charAt(0).toUpperCase() + key.slice(1);
-                    str += '<b>' + capitalizedKey + '</b>: ' + dict[key] + ' ';
-                }
+        // function generating the embed URL based on the type, id, and platform
+        function generateEmbedURL(type, id, platform) {
+            if (platform == 'deezer') {
+                return `https://widget.deezer.com/widget/auto/${type}/${id}/top_tracks`;
+            } else if (platform == 'spotify') {
+                return `https://open.spotify.com/embed/${type}/${id}`;
             }
-            return str;
         }
 
         // Add an event listener to the form to handle the submission
         buttonElement.addEventListener('click', (event) => {
             event.preventDefault();
 
-            // Get the init link from the input
-            const initLink = initLinkInput.value;
+            // Get the URL from the input
+            const initURL = inputURL.value;
 
-            // Clear the result and log elements
-            imgElement.style.display = 'none'
-            imgLinkElement.href = '';
-            imgElement.src = '';
-            infoElement.innerHTML = '';
-            moreInfoElement.innerHTML = '';
+            // Clear the log element
             logElement.innerHTML = '';
 
-            // Send a GET request to the server with the init link
+            // Send a GET request to the server with the init URL
             // fetch('https://rayandaod.pythonanywhere.com/convert', {
             fetch('http://127.0.0.1:8080/convert', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ initLink: initLink }),
+                body: JSON.stringify({ initURL: initURL }),
             })
                 .then((response) => {
                     // When the server responds, parse the response as JSON
                     return response.json();
                 })
                 .then((data) => {
-                    // Get the result link and log messages from the response data
-                    const resultLink = data.result.result_link;
-                    const platform = data.result.platform;
-                    const img_src = data.result.img_src;
-                    const type = data.result.type;
-                    const info = data.result.info[type];
-                    delete data.result.info[type]
-                    const more_info = data.result.info;
+                    const init_type = data.result.init.type;
+                    const init_id = data.result.init.id;
+                    const init_platform = data.result.init.platform;
+                    init_url = data.result.init.url;
+
+                    const result_type = data.result.result.type;
+                    const result_id = data.result.result.id;
+                    const result_platform = data.result.result.platform;
+                    result_url = data.result.result.url;
+
                     const log = data.log;
 
-                    // Set the image element to the img src and make it clickable
-                    if (img_src != '') {
-                        imgElement.style.display = 'block';
-                        imgElement.src = img_src;
-                        imgLinkElement.href = resultLink;
-                    }
+                    // Set the init item to the init URL
+                    initItem.src = generateEmbedURL(init_type, init_id, init_platform);
 
-                    // Set the platform element to the platform
-                    if (platform == 'Deezer') {
-                        document.getElementById('platform').src = 'spoteezer_assets/deezer_logo.png';
-                    } else if (platform == 'Spotify') {
-                        document.getElementById('platform').src = 'spoteezer_assets/spotify_logo.png';
-                    }
-
-                    // Display the platform logo
-                    document.getElementById('platform').style.display = 'block';
-
-                    // Set the info element to the info
-                    infoElement.innerHTML = '' + type.charAt(0).toUpperCase() + type.slice(1) + ': <a href="' + resultLink + '">' + info + '</a>';
-                    moreInfoElement.innerHTML = dictToString(more_info);
-
-                    // Display the result div border
-                    document.getElementById('results').style.borderWidth = '1px';
+                    // Set the result item to the new URL
+                    resultItem.src = generateEmbedURL(result_type, result_id, result_platform);
 
                     // Set the log element to the log messages
                     logElement.innerHTML = log;
@@ -128,6 +101,11 @@
                     logElement.innerHTML = 'An error occurred: ' + error + ' Try again.';
                 });
         });
+
+        // function to copy the result URL to the clipboard
+        function copyToClipboard() {
+            navigator.clipboard.writeText(result_url);
+        }
 
     </script>
 </body>

@@ -8,34 +8,50 @@ from items import DeezerItem, Item, SpotifyItem
 pp = pprint.PrettyPrinter(indent=4)
 
 
-def get_init_item(link, logger=None):
-    if 'deezer' in link:
-        item = DeezerItem(link=link, logger=logger)
-        platform = 'Deezer'
-    elif 'spotify' in link:
-        item = SpotifyItem(link=link, logger=logger)
-        platform = 'Spotify'
+def get_item(URL: str, logger=None):
+    """Gets the item from the given URL.
+
+    Args:
+        URL (str): URL of the item.
+        logger (Logger, optional): Logger object to log information. Defaults to None.
+
+    Raises:
+        ValueError: If the URL is not from Deezer or Spotify.
+
+    Returns:
+        Item: The item from the given URL.
+    """
+    if 'deezer' in URL:
+        item = DeezerItem(url=URL, logger=logger)
+    elif 'spotify' in URL:
+        item = SpotifyItem(URL=URL, logger=logger)
     else:
         raise ValueError(
-            f'Could not determine between Deezer and Spotify from link {link}...')
+            f'Could not determine between Deezer and Spotify from URL {URL}...')
 
     if logger is not None:
-        logger.info(f'Initialized {platform} item from link {link}')
+        logger.info(f'Initialized {item.PLATFORM} item from URL {URL}')
 
-    return item, platform
+    return item
 
 
 def convert_item(init_item: Item, logger=None):
-    if type(init_item) == DeezerItem:
-        item = SpotifyItem(search_params=init_item.search_params,
-                           item_type=init_item.type, logger=logger)
-        platform = 'Spotify'
-    elif type(init_item) == SpotifyItem:
-        item = DeezerItem(search_params=init_item.search_params,
-                          item_type=init_item.type, logger=logger)
-        platform = 'Deezer'
+    """Converts the given initial item into another item,
+    i.e from a DeezerItem to a SpotifyItem and vice-versa.
 
-    return item, platform
+    Args:
+        init_item (Item): The initial item to convert.
+        logger (Logger, optional): Logger object to log information. Defaults to None.
+
+    Returns:
+        Item: The item from the given URL.
+    """
+    if type(init_item) == DeezerItem:
+        return SpotifyItem(search_params=init_item.search_params,
+                           item_type=init_item.type, logger=logger)
+    elif type(init_item) == SpotifyItem:
+        return DeezerItem(search_params=init_item.search_params,
+                          item_type=init_item.type, logger=logger)
 
 
 if __name__ == "__main__":
@@ -50,12 +66,13 @@ if __name__ == "__main__":
     logger.addHandler(logging.StreamHandler())
 
     #  Creat the item from the link and convert it
-    init_item, init_platform = get_init_item(init_link, logger=logger)
-    result_item, result_platform = convert_item(init_item, logger=logger)
+    init_item = get_item(init_link, logger=logger)
+    result_item = convert_item(init_item, logger=logger)
 
     print()
-    print(init_platform)
+    print(init_item.PLATFORM)
     pp.pprint(init_item.web_info)
+    
     print()
-    print(result_platform)
+    print(result_item.PLATFORM)
     pp.pprint(result_item.web_info)

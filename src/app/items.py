@@ -12,7 +12,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 # Search parameters dictionary
 # The key is the type of the item (track, album, artist)
-# The value is a list of lists of search terms, in order of priority
+# The value is a list of search parameter groups, in order of priority
 SEARCH_PARAM_TRIALS_DICT = {'track': [['track', 'artist', 'album'],
                                       ['track', 'artist'],
                                       ['track']],
@@ -23,25 +23,39 @@ SEARCH_PARAM_TRIALS_DICT = {'track': [['track', 'artist', 'album'],
 
 
 class Item():
-    def __init__(self, link):
-        # Check if the link is valid
-        if link is None:
-            raise ValueError('Link is None')
+    def __init__(self, url):
+        """Instantiates an Item object given an URL.
+
+        Args:
+            url (str): The URL to instanciate the Item object from.
+
+        Raises:
+            ValueError: If the URL was not specified.
+        """
+        # Check if the url is valid
+        if url is None:
+            raise ValueError('URL is None')
 
         # Remove whitespace and replace http with https
-        tmp_link = link.strip()
-        tmp_link = link.replace('http://', 'https://')
+        tmp_url = url.strip()
+        tmp_url = url.replace('http://', 'https://')
 
-        # Get the final link after redirections
-        responses = requests.get(tmp_link)
+        # Get the final URL after redirections
+        responses = requests.get(tmp_url)
         if len(responses.history) > 0:
-            self.link = responses.history[-1].url
+            self.url = responses.history[-1].url
         else:
-            self.link = responses.url
+            self.url = responses.url
 
     def extract_info_simple(self, artists_key=None, item_name_key=None):
-        """
-        Get the specified information from the Spotify results.
+        """Extracts basic information about the item.
+
+        Args:
+            artists_key (str, optional): Key to get the artists. Defaults to None.
+            item_name_key (str, optional): Key to get the item name. Defaults to None.
+
+        Returns:
+            dict: Basic information extracted, e.g track name, album name, artist name.
         """
 
         # Initialize the info dictionary
@@ -49,6 +63,8 @@ class Item():
 
         # Get the artist or artists
         def _get_artists(info_simple, raw_info, artists_key):
+
+            # Special case for Deezer (not perfect implementation for now lmao)
             if type(self) == DeezerItem and artists_key not in raw_info:
                 artists_key = 'artist'
 
@@ -60,7 +76,6 @@ class Item():
                     raw_info[artists_key]) == list else raw_info[artists_key]['name']
             return info_simple
 
-        # For each info type, get the corresponding info from the item
         if self.type in ['track', 'album']:
             info_simple[self.type] = self.raw_info[item_name_key]
             info_simple = _get_artists(info_simple, self.raw_info, artists_key)
@@ -76,47 +91,78 @@ class Item():
 
         return info_simple
 
-    def extract_img_link(self, key, substr=None):
-        pp.pprint(self.raw_info)
-        img_link = get_first_value_with_substr(self.raw_info, key, substr)
-        return img_link
+    def log(self, log_str, level='info'):
+        """Logs the given string in the right level and by checking if
+        logger is not None first. Improves readability in the code (imo).
+
+        Args:
+            log_str (str): The string to log.
+            level (str, optional): The level to log the string. Defaults to 'info'.
+        """
+        if self.logger is not None:
+            if level == 'info':
+                self.logger.info(log_str)
+            elif level == 'warning':
+                self.logger.warning(log_str)
+            elif level == 'error':
+                self.logger.error(log_str)
+        else:
+            print(log_str)
 
 
 class DeezerItem(Item):
 
-    platform = 'Deezer'
+    PLATFORM = 'deezer'
 
-    def __init__(self, link=None, search_params=None, item_type=None, logger=None):
+    def __init__(self, url=None, search_params=None, item_type=None, logger=None):
+        """Instanciates a Deezer item based on the given parameter(s).
+
+        Args:
+            url (str, optional): URL to instanciate the item from. Defaults to None.
+            search_params (dict, optional): Search parameters to instantiate the item from,
+            by searching the Deezer database and finding the closest match. Defaults to None.
+            item_type (str, optional): Item type, i.e track, album, or artist. Defaults to None.
+            logger (Logger, optional): The logger to log information. Defaults to None.
+        """
         self.logger = logger
 
-        if link is not None:
-            super().__init__(link)
-            self.type = self.link.split('/')[-2]
-            self.id = int(self.link.split('/')[-1].split('?')[0])
+        # Constructor from url
+        if url is not None:
+            super().__init__(url)
+            self.type = self.url.split('/')[-2]
+            self.id = int(self.url.split('/')[-1].split('?')[0])
             self.raw_info = self.get_raw_info_from_id(self.id, self.type)
             self.search_params = self.get_search_params(self.raw_info)
 
+        # Constructor from search parameters
         elif search_params is not None:
             self.search_params = search_params
             self.type = item_type
             results = self.search(self.search_params, self.type)
             self.raw_info = self.get_raw_info_from_results(results)
             self.id = self.raw_info['id']
-            self.link = self.raw_info['link']
+            self.url = self.raw_info['link']
 
-        self.img_link = self.extract_img_link('cover_medium', 'cover')
-        if self.img_link is None:
-            self.img_link = self.raw_info['picture_medium']
-
-        self.info_simple = self.extract_info_simple(
-            artists_key='contributors', item_name_key='title')
         self.web_info = extract_web_info(self)
 
+
     def get_raw_info_from_id(self, id, _type):
-        link_clean = DEEZER_API + f"{_type}/{id}"
+        """Gets the raw info from the id and type of a Deezer item.
+
+        Args:
+            id (str): The Deezer item id.
+            _type (str): The Deezer item type, i.e track, album, or artist.
+
+        Raises:
+            ValueError: If the Deezer API sends a bad response.
+
+        Returns:
+            JSON: The JSON response from the Deezer API.
+        """
+        clean_url = DEEZER_API + f"{_type}/{id}"
 
         # Get the data from the Deezer API
-        DEEZER_CONNECTION.request("GET", link_clean)
+        DEEZER_CONNECTION.request("GET", clean_url)
         response = DEEZER_CONNECTION.getresponse()
 
         # Check if the response is valid
@@ -126,9 +172,30 @@ class DeezerItem(Item):
         return json.loads(response.read().decode("utf-8"))
 
     def get_raw_info_from_results(self, results):
+        """Extracts raw information from search results, i.e the
+        first item here.
+
+        Args:
+            results (dict): The results from a previous search.
+
+        Returns:
+            dict: The raw information from the first item in the results here.
+        """
         return results['data'][0]
 
     def get_search_params(self, raw_info):
+        """Gets the search parameters for later search, based on the given raw
+        information.
+
+        Args:
+            raw_info (dict): The raw information to get the search parameters from.
+
+        Raises:
+            ValueError: If the Deezer type is not valid.
+
+        Returns:
+            dict: The search parameters issued from the raw information of the current item.
+        """
         if self.type == 'track':
             search_params = {
                 'track': preprocess_string(raw_info['title']),
@@ -153,8 +220,21 @@ class DeezerItem(Item):
         return search_params
 
     # TODO: Add search trials
-
     def search(self, search_params, _type):
+        """Searches the Deeezer database with the given search parameters.
+        Tries search parameter combinations by decreasing order of precision,
+        according to the SEARCH_PARAM_TRIALS_DICT dictionary.
+
+        Args:
+            search_params (dict): The search parameters to search with.
+            _type (str): The Deezer item type, i.e track, album, or artist. 
+
+        Raises:
+            ValueError: If the Deezer API responses with a bad status code.
+
+        Returns:
+            dict: The results obtained from the search.
+        """
         # Get the search trial list
         search_param_trials = SEARCH_PARAM_TRIALS_DICT[_type]
 
@@ -175,30 +255,39 @@ class DeezerItem(Item):
                 raise ValueError('Invalid response from Deezer API')
 
             # Get the response data
-            data = json.loads(response.read().decode("utf-8"))
+            results = json.loads(response.read().decode("utf-8"))
 
-        return data
+        return results
 
 
 class SpotifyItem(Item):
 
-    platform = 'Spotify'
+    PLATFORM = 'spotify'
 
-    def __init__(self, link=None, search_params=None, item_type=None, logger=None):
+    def __init__(self, URL=None, search_params=None, item_type=None, logger=None):
+        """Constructor for the SpotifyItem class.
+
+        Args:
+            URL (str, optional): The Spotify URL to the item. Defaults to None.
+            search_params (dict, optional): The search parameters to search with. Defaults to None.
+            item_type (str, optional): The Spotify item type, i.e track, album, or artist. Defaults to None.
+            logger (Logger, optional): The logger to use. Defaults to None.
+        """
+
         self.logger = logger
 
-        #  Constructor from link
-        #  Infer type and id from link
+        #  Constructor from URL
+        #  Infer type and id from URL
         #  Use id and type to get info from Spotify API
-        if link:
-            super().__init__(link)
+        if URL:
+            super().__init__(URL)
 
-            parsed_link = urlparse(self.link)
-            if parsed_link.netloc != 'open.spotify.com':
-                raise ValueError('Invalid Spotify link')
+            parsed_url = urlparse(self.url)
+            if parsed_url.netloc != 'open.spotify.com':
+                raise ValueError('Invalid Spotify URL')
 
-            # Extract the type and ID from the link path
-            path_parts = parsed_link.path.split('/')
+            # Extract the type and ID from the URL path
+            path_parts = parsed_url.path.split('/')
             self.type = path_parts[1]
             self.id = path_parts[2]
             self.raw_info = self.get_raw_info_from_id(self.id, self.type)
@@ -214,17 +303,28 @@ class SpotifyItem(Item):
             results = self.search()
             self.raw_info = self.get_raw_info_from_results(results, self.type)
 
-            # Get the Spotify link from the results
-            self.link = get_first_value_with_substr(self.raw_info,
+            # Get the Spotify URL from the results
+            self.url = get_first_value_with_substr(self.raw_info,
                                                     'spotify',
                                                     substring=self.type)
 
-        self.img_link = self.extract_img_link('url', 'i.scdn.co')
-        self.info_simple = self.extract_info_simple(
-            artists_key='artists', item_name_key='name')
+            self.id = self.raw_info['id']
+
         self.web_info = extract_web_info(self)
 
     def get_raw_info_from_id(self, id, _type):
+        """Gets the raw info from the Spotify API using the id and type.
+
+        Args:
+            id (string): The Spotify id of the item.
+            _type (string): The type of the item (either 'track', 'album', or 'artist').
+
+        Raises:
+            ValueError: If the type is invalid.
+
+        Returns:
+            dictionary: The raw info from the Spotify API.
+        """
         # Get the info from the Spotify API using the id and type
         if _type == 'track':
             return SPOTIFY.track(id)
@@ -239,9 +339,30 @@ class SpotifyItem(Item):
             raise ValueError('Invalid Spotify item type')
 
     def get_raw_info_from_results(self, results, _type):
+        """Gets the first item from a Spotify search results.
+
+        Args:
+            results (dictionary): The result dictionary of a Spotify search.
+            _type (string): The search type (either 'track', 'album', or 'artist').
+
+        Returns:
+            dictionary: The first item from the search results.
+        """
         return results[f'{_type}s']['items'][0]
 
     def get_search_params(self, raw_info):
+        """Gets the search parameters from the raw info of the item.
+
+        Args:
+            raw_info (dictionary): The raw info of the Spotify item.
+
+        Raises:
+            ValueError: If the item type is invalid.
+
+        Returns:
+            dictionary: The search parameters for later constructing a search query.
+        """
+
         if self.type == 'track':
             search_params = {
                 'track': preprocess_string(raw_info['name']),
@@ -266,13 +387,13 @@ class SpotifyItem(Item):
         return search_params
 
     def search(self):
-        """
-        Search for a Spotify item using the search_dict and item_type.
-        The search_dict is a dictionary with the following keys
-        - track
-        - artist
-        - album
-        The item_type is a string that can be either 'track', 'album' or 'artist'.
+        """Searches for the item on Spotify.
+
+        Raises:
+            FileNotFoundError: If the search parameters are invalid.
+
+        Returns:
+            dict: The search results.
         """
 
         # Get the trials corresponding to the item_type
@@ -288,17 +409,14 @@ class SpotifyItem(Item):
             for key in trial:  # e.g ['track', 'artist', 'album']
                 value = self.search_params[key]
                 query += (f'{key}:' + value + ' ') if value is not None else ''
-
-            if self.logger is not None:
-                self.logger.info(f'Spotify query = {query}')
+            self.log(f'Spotify query = {query}')
 
             return query
 
         found = False
         trial_index = 0
         while not found:
-            if self.logger is not None:
-                self.logger.info(f'Trying {search_params[trial_index]}...')
+            self.log(f'Trying {search_params[trial_index]}...')
 
             trial = search_params[trial_index]
             spotify_query = _get_query(trial)
@@ -306,26 +424,29 @@ class SpotifyItem(Item):
                 q=spotify_query, limit=1, type=self.type)
             found = spotify_results[self.type+'s']['total'] > 0
 
+            # If not found and we have tried all the trials
+            # Return an error saying that the item was not found
             if not found and trial_index == len(search_params) - 1:
                 error_msg = f'Could not find {self.type} in Spotify...'
-                if self.logger is not None:
-                    self.logger.info(error_msg)
+                self.log(error_msg)
                 raise FileNotFoundError(error_msg)
+
+            # Otherwise, try the next trial
             else:
                 trial_index += 1
 
-        if self.logger is not None:
-            self.logger.info(f'Found {self.type} in Spotify!')
-            self.logger.debug(
-                f'Spotify results = {pp.pformat(spotify_results)}')
-
+        # If we reached this point, it means that we found the item
+        # Log the results and return them
+        self.log(f'Found {self.type} in Spotify!')
+        self.log(
+            f'Spotify results = {pp.pformat(spotify_results)}', level='debug')
         return spotify_results
 
 
 if __name__ == '__main__':
-    deezer_item = DeezerItem(link='https://deezer.page.link/i91thUP4sU1CimYi6')
+    deezer_item = DeezerItem(url='https://deezer.page.link/i91thUP4sU1CimYi6')
     pp.pprint(deezer_item.web_info)
 
     spotify_item = SpotifyItem(
-        link='https://open.spotify.com/track/5NGBpnkXvvC1iOLByxVsRG?si=edaa77825a414659')
+        URL='https://open.spotify.com/track/5NGBpnkXvvC1iOLByxVsRG?si=edaa77825a414659')
     pp.pprint(spotify_item.web_info)

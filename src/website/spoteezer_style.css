@@ -33,10 +33,10 @@ h1 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-top: auto;
+    margin-top: 2em;
 }
 
-#init-link {
+#input-url {
     width: 30em;
     height: 2em;
     font-size: 1.5em;
@@ -58,64 +58,27 @@ h1 {
     background-color: #00acc1;
     color: white;
     cursor: pointer;
+    margin-top: 1em;
 }
 
 #convert-button:hover {
     background-color: #00838f;
 }
 
-#results {
+#init-item {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-top: auto;
-    margin-bottom: auto;
-    border: 1px solid #000000;
-    border-width: 0;
-    border-radius: 0.5em;
-    padding: 1em;
+    margin-top: 2em;
 }
 
-
-#platform {
-    display: none;
-    position: relative;
-    width: 1.5em;
-    height: 1.5em;
-}
-
-
-#cover-img {
-    display: none;
+#result-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     margin-top: 1em;
-    width: 100px;
-    height: 100px;
-    border-radius: 0.5em;
-}
-
-#info {
-    font-size: 1.5em;
-    font-weight: 600;
-    margin-top: 1em;
-    color: #000000;
-}
-
-#more-info {
-    margin-top: 1em;
-    color: #000000;
-}
-
-#result-link {
-    margin-top: 1em;
-    font-size: 1.5em;
-    font-weight: bold;
-    color: #000000;
-    cursor: pointer;
-}
-
-#result-link:hover {
-    color: #00acc1;
 }
 
 #logs {
