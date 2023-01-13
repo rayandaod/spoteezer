@@ -2,15 +2,15 @@
 <html>
 
 <head>
-    <title>Spoteezer</title><link rel="icon" type="image/png" href="spoteezer_assets/spoteezer.png">
-    <link rel='stylesheet' type='text/css' href='spoteezer_style.css'>
-    <link rel="apple-touch-icon" href="spoteezer_assets/apple-touch-icon.png">
+    <title>Spoteezer</title><link rel="icon" type="image/png" href="assets/spoteezer.png">
+    <link rel='stylesheet' type='text/css' href='style.css'>
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 </head>
 
 <body>
     <div id="head">
         <h1>Spoteezer</h1>
-        <img src="spoteezer_assets/spoteezer.png" alt="Spoteezer logo" id="spoteezer-logo">
+        <img src="assets/spoteezer.png" alt="Spoteezer logo" id="spoteezer-logo">
     </div>
     
     <div id="center-elems">
@@ -25,7 +25,7 @@
     <div id="logs"></div>
 
     <a href="https://github.com/rayandaod/spoteezer">
-        <img src="spoteezer_assets/github_logo.png" alt="GitHub logo" id="github-logo">
+        <img src="assets/github_logo.png" alt="GitHub logo" id="github-logo">
     </a>
 
     <script>
@@ -61,8 +61,8 @@
             logElement.innerHTML = '';
 
             // Send a GET request to the server with the init URL
-            // fetch('https://rayandaod.pythonanywhere.com/convert', {
-            fetch('http://127.0.0.1:8080/convert', {
+            fetch('https://rayandaod.pythonanywhere.com/convert', {
+            // fetch('http://127.0.0.1:8080/convert', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
