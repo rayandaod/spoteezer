@@ -1,11 +1,11 @@
-import json
 import pprint
 import requests
+import re
 
 from urllib.parse import urlparse, quote
 
 from helper import get_first_value_with_substr, preprocess_string, extract_web_info
-from config import DEEZER_CONNECTION, DEEZER_API, SPOTIFY
+from config import DEEZER, SPOTIFY
 
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -13,13 +13,17 @@ pp = pprint.PrettyPrinter(indent=4)
 # Search parameters dictionary
 # The key is the type of the item (track, album, artist)
 # The value is a list of search parameter groups, in order of priority
-SEARCH_PARAM_TRIALS_DICT = {'track': [['track', 'artist', 'album'],
-                                      ['track', 'artist'],
+SEARCH_PARAM_TRIALS_DICT = {'track': [['track', 'artist', 'album', 'duration_sec'],
+                                      ['track', 'artist', 'duration_sec'],
+                                      ['track', 'duration_sec'],
                                       ['track']],
-                            'album': [['album', 'artist'],
-                                      ['album']],
+                            'album': [['album', 'artist', 'tracks'],
+                                      ['album', 'artist',
+                                      'album']],
                             'artist': [['artist']]
                             }
+
+# !!! Spotify does not allow to search for tracks by duration !!!
 
 
 class Item():
@@ -139,7 +143,7 @@ class DeezerItem(Item):
             self.search_params = search_params
             self.type = item_type
             results = self.search(self.search_params, self.type)
-            self.raw_info = self.get_raw_info_from_results(results)
+            self.raw_info = self.get_first_raw_info(results)
             self.id = self.raw_info['id']
             self.url = self.raw_info['link']
 
@@ -153,25 +157,21 @@ class DeezerItem(Item):
             id (str): The Deezer item id.
             _type (str): The Deezer item type, i.e track, album, or artist.
 
-        Raises:
-            ValueError: If the Deezer API sends a bad response.
-
         Returns:
-            JSON: The JSON response from the Deezer API.
+            dict: The dictionary containing the raw information.
         """
-        clean_url = DEEZER_API + f"{_type}/{id}"
 
         # Get the data from the Deezer API
-        DEEZER_CONNECTION.request("GET", clean_url)
-        response = DEEZER_CONNECTION.getresponse()
+        if _type == 'track':
+            DEEZER.get_track(id)
+        elif _type == 'album':
+            DEEZER.get_album(id)
+        elif _type == 'artist':
+            DEEZER.get_artist(id)
 
-        # Check if the response is valid
-        if response.status != 200:
-            raise ValueError('Invalid response from Deezer API')
+        return DEEZER.as_dict()
 
-        return json.loads(response.read().decode("utf-8"))
-
-    def get_raw_info_from_results(self, results):
+    def get_first_raw_info(self, results):
         """Extracts raw information from search results, i.e the
         first item here.
 
@@ -181,7 +181,7 @@ class DeezerItem(Item):
         Returns:
             dict: The raw information from the first item in the results here.
         """
-        return results['data'][0]
+        return results[0].as_dict()
 
     def get_search_params(self, raw_info):
         """Gets the search parameters for later search, based on the given raw
@@ -200,13 +200,15 @@ class DeezerItem(Item):
             search_params = {
                 'track': preprocess_string(raw_info['title']),
                 'artist': preprocess_string(raw_info['artist']['name']),
-                'album': preprocess_string(raw_info['album']['title'])
+                'album': preprocess_string(raw_info['album']['title']),
+                'duration_sec': raw_info['duration'],
             }
 
         elif self.type == 'album':
             search_params = {
                 'album': preprocess_string(raw_info['title']),
-                'artist': preprocess_string(raw_info['artist']['name'])
+                'artist': preprocess_string(raw_info['artist']['name']),
+                'tracks' : [preprocess_string(track['title']) for track in raw_info['tracks']['data']]
             }
 
         elif self.type == 'artist':
@@ -219,8 +221,8 @@ class DeezerItem(Item):
 
         return search_params
 
-    # TODO: Add search trials
-    def search(self, search_params, _type):
+
+    def search(self, search_params, _type, limit=1):
         """Searches the Deeezer database with the given search parameters.
         Tries search parameter combinations by decreasing order of precision,
         according to the SEARCH_PARAM_TRIALS_DICT dictionary.
@@ -238,24 +240,38 @@ class DeezerItem(Item):
         # Get the search trial list
         search_param_trials = SEARCH_PARAM_TRIALS_DICT[_type]
 
+        def _get_query(search_trial):
+            query = ''
+            for key, value in search_params.items():
+                if key in search_trial:
+                    if key == 'duration_sec':
+                        query += f'dur_min:{value} dur_max:{value} '
+                    elif key == 'tracks':
+                        pass
+                    else:
+                        query += f'{key}:"{value}" '
+            return query
+
         # Try each search trial
         for search_trial in search_param_trials:
-            # Construct the search query
-            query = ''.join([f'{key}:"{value}"' for key,
-                            value in search_params.items()])
+            self.log(f'Trying {search_trial}...')
+            query = _get_query(search_trial)
+            self.log(f'Deezer query: {query}')
             query = quote(query)
 
             # Make the search request
-            DEEZER_CONNECTION.request(
-                "GET", f"{DEEZER_API}search/{_type}?q={query}&order=RANKING&limit=1")
-            response = DEEZER_CONNECTION.getresponse()
+            if _type == 'track':
+                results = DEEZER.search(query)
+            elif _type == 'album':
+                results = DEEZER.search_albums(query)
+            elif _type == 'artist':
+                results = DEEZER.search_artists(query)
 
-            # Check if the response is valid
-            if response.status != 200:
-                raise ValueError('Invalid response from Deezer API')
-
-            # Get the response data
-            results = json.loads(response.read().decode("utf-8"))
+            if len(results) > 0:
+                break
+            
+        if len(results) == 0:
+            raise FileNotFoundError('Could not find item on Deezer...')
 
         return results
 
@@ -363,17 +379,28 @@ class SpotifyItem(Item):
             dictionary: The search parameters for later constructing a search query.
         """
 
+        def _prep_spotify_track_name(track_name):
+            """Preprocesses the track name.
+
+            Returns:
+                string: The preprocessed track name.
+            """
+            # Remove the '(feat. ...)' string from the track name
+            return re.sub(r'\(feat.*\)', '', track_name)
+
         if self.type == 'track':
             search_params = {
-                'track': preprocess_string(raw_info['name']),
+                'track': preprocess_string(_prep_spotify_track_name(raw_info['name'])),
                 'artist': preprocess_string(raw_info['artists'][0]['name']),
-                'album': preprocess_string(raw_info['album']['name'])
+                'album': preprocess_string(raw_info['album']['name']),
+                'duration_sec': int(raw_info['duration_ms'] / 1000)
             }
 
         elif self.type == 'album':
             search_params = {
                 'album': preprocess_string(raw_info['name']),
-                'artist': preprocess_string(raw_info['artists'][0]['name'])
+                'artist': preprocess_string(raw_info['artists'][0]['name']),
+                'tracks': [preprocess_string(track['name']) for track in raw_info['tracks']['items']]
             }
 
         elif self.type == 'artist':
@@ -386,7 +413,7 @@ class SpotifyItem(Item):
 
         return search_params
 
-    def search(self):
+    def search(self, limit=1):
         """Searches for the item on Spotify.
 
         Raises:
@@ -397,50 +424,51 @@ class SpotifyItem(Item):
         """
 
         # Get the trials corresponding to the item_type
-        search_params = SEARCH_PARAM_TRIALS_DICT[self.type]
+        search_params_trials = SEARCH_PARAM_TRIALS_DICT[self.type]
 
         def _get_query(trial):
-            """
-            Get the query string from the search_dict and trial.
-            The trial is a list of keys from the search_dict.
+            """Generates the query from the current search trial and
+            the search params of the current SpotifyItem object.
+
+            Args:
+                trial (list): List of keys to process in the query
+
+            Returns:
+                str: The final query for that search parameters trial.
             """
 
             query = ''
             for key in trial:  # e.g ['track', 'artist', 'album']
                 value = self.search_params[key]
-                query += (f'{key}:' + value + ' ') if value is not None else ''
+                if key == 'duration_sec':
+                    # Spotify search doesn't support duration search
+                    pass
+                elif key == 'tracks':
+                    # TODO
+                    pass
+                else:
+                    query += (f'{key}:' + str(value) + ' ') if value is not None else ''
             self.log(f'Spotify query = {query}')
 
             return query
 
-        found = False
-        trial_index = 0
-        while not found:
-            self.log(f'Trying {search_params[trial_index]}...')
+        for search_params_trial in search_params_trials:
+            self.log(f'Trying {search_params_trial}...')
+            query = _get_query(search_params_trial)
+            self.log(f'Spotify query = {query}')
+            results = SPOTIFY.search(q=query, limit=limit, type=self.type)
+            found = results[self.type+'s']['total'] > 0
 
-            trial = search_params[trial_index]
-            spotify_query = _get_query(trial)
-            spotify_results = SPOTIFY.search(
-                q=spotify_query, limit=1, type=self.type)
-            found = spotify_results[self.type+'s']['total'] > 0
-
-            # If not found and we have tried all the trials
-            # Return an error saying that the item was not found
-            if not found and trial_index == len(search_params) - 1:
-                error_msg = f'Could not find {self.type} in Spotify...'
-                self.log(error_msg)
-                raise FileNotFoundError(error_msg)
-
-            # Otherwise, try the next trial
-            else:
-                trial_index += 1
-
-        # If we reached this point, it means that we found the item
-        # Log the results and return them
+            if found:
+                break
+        
+        if not found:
+            raise FileNotFoundError('Could not find item on Spotify...')
+        
         self.log(f'Found {self.type} in Spotify!')
         self.log(
-            f'Spotify results = {pp.pformat(spotify_results)}', level='debug')
-        return spotify_results
+            f'Spotify results = {pp.pformat(results)}', level='debug')
+        return results
 
 
 if __name__ == '__main__':

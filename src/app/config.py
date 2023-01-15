@@ -1,12 +1,10 @@
 import os
 import spotipy
-
-from http.client import HTTPSConnection
+import deezer
 
 
 # Deezer API
-DEEZER_API = "/2.0/"
-DEEZER_CONNECTION = HTTPSConnection("api.deezer.com")
+DEEZER = deezer.Client()
 
 # Spotify API credentials
 SpotifyClientCredentials = spotipy.oauth2.SpotifyClientCredentials
