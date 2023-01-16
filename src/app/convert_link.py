@@ -74,9 +74,7 @@ if __name__ == "__main__":
     result_item = convert_item(init_item, logger=logger)
 
     print()
-    print(init_item.PLATFORM)
     pp.pprint(init_item.web_info)
     
     print()
-    print(result_item.PLATFORM)
     pp.pprint(result_item.web_info)

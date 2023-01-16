@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import pprint
 import requests
 import re
@@ -26,7 +27,7 @@ SEARCH_PARAM_TRIALS_DICT = {'track': [['track', 'artist', 'album', 'duration_sec
 # !!! Spotify does not allow to search for tracks by duration !!!
 
 
-class Item():
+class Item(ABC):
     def __init__(self, url):
         """Instantiates an Item object given an URL.
 
@@ -132,6 +133,26 @@ class Item():
             print(log_str)
 
 
+    @abstractmethod
+    def get_raw_info_from_id(self, id, _type):
+        pass
+
+
+    @abstractmethod
+    def get_first_raw_info(self, results, _type):
+        pass
+
+
+    @abstractmethod
+    def get_search_params(self, raw_info):
+        pass
+
+
+    @abstractmethod
+    def search(self, search_params, _type, limit=1):
+        pass
+
+
 class DeezerItem(Item):
 
     PLATFORM = 'deezer'
@@ -189,7 +210,7 @@ class DeezerItem(Item):
 
         return result.as_dict()
 
-    def get_first_raw_info(self, results):
+    def get_first_raw_info(self, results, _type=None):
         """Extracts raw information from search results, i.e the
         first item here.
 
@@ -334,8 +355,8 @@ class SpotifyItem(Item):
             self.type = item_type
 
             # Search for the item on Spotify and get the first result
-            results = self.search()
-            self.raw_info = self.get_raw_info_from_results(results, self.type)
+            results = self.search(self.search_params, self.type)
+            self.raw_info = self.get_first_raw_info(results, self.type)
 
             # Get the Spotify URL from the results
             self.url = get_first_value_with_substr(self.raw_info,
@@ -372,7 +393,7 @@ class SpotifyItem(Item):
         else:
             raise ValueError('Invalid Spotify item type')
 
-    def get_raw_info_from_results(self, results, _type):
+    def get_first_raw_info(self, results, _type):
         """Gets the first item from a Spotify search results.
 
         Args:
@@ -431,7 +452,7 @@ class SpotifyItem(Item):
 
         return search_params
 
-    def search(self, limit=1):
+    def search(self, search_params, _type, limit=1):
         """Searches for the item on Spotify.
 
         Raises:
@@ -442,7 +463,7 @@ class SpotifyItem(Item):
         """
 
         # Get the trials corresponding to the item_type
-        search_params_trials = SEARCH_PARAM_TRIALS_DICT[self.type]
+        search_params_trials = SEARCH_PARAM_TRIALS_DICT[_type]
 
         def _get_query(trial):
             """Generates the query from the current search trial and
@@ -457,7 +478,7 @@ class SpotifyItem(Item):
 
             query = ''
             for key in trial:  # e.g ['track', 'artist', 'album']
-                value = self.search_params[key]
+                value = search_params[key]
                 if key == 'duration_sec':
                     # Spotify search doesn't support duration search
                     pass
@@ -470,12 +491,11 @@ class SpotifyItem(Item):
 
             return query
 
-        for search_params_trial in search_params_trials:
-            self.log(f'Trying {search_params_trial}...')
-            query = _get_query(search_params_trial)
-            self.log(f'Spotify query = {query}')
-            results = SPOTIFY.search(q=query, limit=limit, type=self.type)
-            found = results[self.type+'s']['total'] > 0
+        for search_params_t in search_params_trials:
+            self.log(f'Trying {search_params_t}...')
+            query = _get_query(search_params_t)
+            results = SPOTIFY.search(q=query, limit=limit, type=_type)
+            found = results[_type+'s']['total'] > 0
 
             if found:
                 break
@@ -483,7 +503,7 @@ class SpotifyItem(Item):
         if not found:
             raise FileNotFoundError('Could not find item on Spotify...')
         
-        self.log(f'Found {self.type} in Spotify!')
+        self.log(f'Found {_type} in Spotify!')
         self.log(
             f'Spotify results = {pp.pformat(results)}', level='debug')
         return results
