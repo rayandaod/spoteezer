@@ -53,19 +53,3 @@ def preprocess_string(string: str):
             string = string.replace(char, SPE_CHARS[1][1])
 
     return string.lower()
-
-
-def extract_web_info(item):
-    """Extracts useful information for the web interfaces.
-
-    Args:
-        item (Item): The item from which to extract the information.
-
-    Returns:
-        dict: The extracted useful information.
-    """
-
-    return {'url': item.url,
-            'type': item.type,
-            'id': item.id,
-            'platform': item.PLATFORM}

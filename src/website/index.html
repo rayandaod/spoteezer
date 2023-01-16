@@ -15,12 +15,15 @@
     
     <div id="center-elems">
         <input id="input-url" placeholder="Deezer or Spotify URL (track, album, or artist)">
-        <button id="convert-button">Convert</button>
+        <button id="convert-button" class="button">Convert</button>
     </div>
 
-    <iframe id="init-item" src="" width="80%" height="380" frameborder="0" allowtransparency="false" allow="encrypted-media; clipboard-write"></iframe>
-    <iframe id="result-item" src="" width="80%" height="380" frameBorder="0" allowfullscreen="false" allow="encrypted-media; clipboard-write"></iframe>
-    <button id="convert-button" onclick="copyToClipboard()">Copy link</button>
+    <div class="iframe-container">
+        <iframe id="init-iframe" class="iframe" src="" frameborder="0" allowtransparency="false" allow="encrypted-media; clipboard-write"></iframe>
+        <iframe id="result-iframe" class="iframe" src="" frameBorder="0" allowfullscreen="false" allow="encrypted-media; clipboard-write"></iframe>
+    </div>
+    
+    <button id="copy-button" class="button" onclick="copyToClipboard()">Copy link</button>
 
     <div id="logs"></div>
 
@@ -28,7 +31,7 @@
         <img src="assets/github_logo.png" alt="GitHub logo" id="github-logo">
     </a>
 
-    <script>
+    <script type="text/javascript">
         const form = document.getElementById('center-elems');
         const inputURL = document.getElementById('input-url');
         const buttonElement = document.getElementById('convert-button');
@@ -42,11 +45,16 @@
         const logElement = document.getElementById('logs');
 
         // function generating the embed URL based on the type, id, and platform
-        function generateEmbedURL(type, id, platform) {
+        function generateEmbedURL(_type, id, platform) {
             if (platform == 'deezer') {
-                return `https://widget.deezer.com/widget/auto/${type}/${id}/top_tracks`;
+                base_url = `https://widget.deezer.com/widget/auto/${_type}/${id}`;
+                if (_type == 'artist'){
+                    return base_url + '/top_tracks';
+                }
+                return base_url;
+
             } else if (platform == 'spotify') {
-                return `https://open.spotify.com/embed/${type}/${id}`;
+                return `https://open.spotify.com/embed/${_type}/${id}`;
             }
         }
 
@@ -57,48 +65,57 @@
             // Get the URL from the input
             const initURL = inputURL.value;
 
+            document.getElementsByClassName('iframe-container')[0].style.display = 'none';
+
+            // Hide the copy button
+            const copyButton = document.getElementById('copy-button');
+            copyButton.style.display = 'none';
+
             // Clear the log element
             logElement.innerHTML = '';
 
             // Send a GET request to the server with the init URL
-            fetch('https://rayandaod.pythonanywhere.com/convert', {
-            // fetch('http://127.0.0.1:8080/convert', {
+            // fetch('https://rayandaod.pythonanywhere.com/convert', {
+            fetch('http://127.0.0.1:8080/convert', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ initURL: initURL }),
             })
                 .then((response) => {
                     // When the server responds, parse the response as JSON
                     return response.json();
                 })
+
                 .then((data) => {
                     const init_type = data.result.init.type;
                     const init_id = data.result.init.id;
                     const init_platform = data.result.init.platform;
                     init_url = data.result.init.url;
+                    const init_iframe = document.getElementById('init-iframe');
 
                     const result_type = data.result.result.type;
                     const result_id = data.result.result.id;
                     const result_platform = data.result.result.platform;
                     result_url = data.result.result.url;
+                    const result_iframe = document.getElementById('result-iframe');
+
+                    document.getElementsByClassName('iframe-container')[0].style.display = 'grid';
+
+                    copyButton.style.display = 'block';
 
                     const log = data.log;
 
-                    // Set the init item to the init URL
-                    initItem.src = generateEmbedURL(init_type, init_id, init_platform);
-
-                    // Set the result item to the new URL
-                    resultItem.src = generateEmbedURL(result_type, result_id, result_platform);
+                    init_iframe.src = generateEmbedURL(init_type, init_id, init_platform)
+                    result_iframe.src = generateEmbedURL(result_type, result_id, result_platform)
 
                     // Set the log element to the log messages
                     logElement.innerHTML = log;
                 })
+
                 .catch((error) => {
                     // If there is an error, log it to the console and set the log element to the error message
                     console.error(error);
-                    logElement.innerHTML = 'An error occurred: ' + error + ' Try again.';
+                    logElement.innerHTML = `An error occurred: ${error}. Try again.`;
                 });
         });
 

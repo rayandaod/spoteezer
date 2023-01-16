@@ -4,7 +4,7 @@ import re
 
 from urllib.parse import urlparse, quote
 
-from helper import get_first_value_with_substr, preprocess_string, extract_web_info
+from helper import get_first_value_with_substr, preprocess_string
 from config import DEEZER, SPOTIFY
 
 
@@ -51,6 +51,7 @@ class Item():
         else:
             self.url = responses.url
 
+
     def extract_info_simple(self, artists_key=None, item_name_key=None):
         """Extracts basic information about the item.
 
@@ -94,6 +95,23 @@ class Item():
                 info_simple['artist'] = self.raw_info['name']
 
         return info_simple
+
+
+    def extract_web_info(self):
+        """Extracts useful information for the web interfaces.
+
+        Args:
+            item (Item): The item from which to extract the information.
+
+        Returns:
+            dict: The extracted useful information.
+        """
+
+        return {'url': self.url,
+                'type': self.type,
+                'id': self.id,
+                'platform': self.PLATFORM}
+
 
     def log(self, log_str, level='info'):
         """Logs the given string in the right level and by checking if
@@ -147,7 +165,7 @@ class DeezerItem(Item):
             self.id = self.raw_info['id']
             self.url = self.raw_info['link']
 
-        self.web_info = extract_web_info(self)
+        self.web_info = self.extract_web_info()
 
 
     def get_raw_info_from_id(self, id, _type):
@@ -163,13 +181,13 @@ class DeezerItem(Item):
 
         # Get the data from the Deezer API
         if _type == 'track':
-            DEEZER.get_track(id)
+            result = DEEZER.get_track(id)
         elif _type == 'album':
-            DEEZER.get_album(id)
+            result = DEEZER.get_album(id)
         elif _type == 'artist':
-            DEEZER.get_artist(id)
+            result = DEEZER.get_artist(id)
 
-        return DEEZER.as_dict()
+        return result.as_dict()
 
     def get_first_raw_info(self, results):
         """Extracts raw information from search results, i.e the
@@ -240,7 +258,7 @@ class DeezerItem(Item):
         # Get the search trial list
         search_param_trials = SEARCH_PARAM_TRIALS_DICT[_type]
 
-        def _get_query(search_trial):
+        def _get_query(search_trial, _type):
             query = ''
             for key, value in search_params.items():
                 if key in search_trial:
@@ -255,7 +273,7 @@ class DeezerItem(Item):
         # Try each search trial
         for search_trial in search_param_trials:
             self.log(f'Trying {search_trial}...')
-            query = _get_query(search_trial)
+            query = _get_query(search_trial, _type)
             self.log(f'Deezer query: {query}')
             query = quote(query)
 
@@ -326,7 +344,7 @@ class SpotifyItem(Item):
 
             self.id = self.raw_info['id']
 
-        self.web_info = extract_web_info(self)
+        self.web_info = self.extract_web_info()
 
     def get_raw_info_from_id(self, id, _type):
         """Gets the raw info from the Spotify API using the id and type.

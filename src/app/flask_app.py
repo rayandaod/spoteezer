@@ -4,7 +4,6 @@ from flask import Flask, request
 from flask_cors import CORS
 
 from convert_link import get_item, convert_item
-from helper import extract_web_info
 
 app = Flask(__name__)
 CORS(app)

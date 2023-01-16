@@ -7,7 +7,7 @@ body {
     height: 100vh;
     width: 100%;
     font-family: sans-serif;
-    background: linear-gradient(to bottom, rgb(25, 25, 25) 50%, rgb(101, 212, 110));
+    background: rgb(0, 0, 0);
 }
 
 h1 {
@@ -49,7 +49,7 @@ h1 {
     border: 1px solid #00acc1;
 }
 
-#convert-button {
+.button {
     width: 10em;
     height: 2em;
     font-size: 1.5em;
@@ -61,33 +61,48 @@ h1 {
     margin-top: 1em;
 }
 
-#convert-button:hover {
+.button:hover {
     background-color: #00838f;
 }
 
-#init-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-top: 2em;
-}
-
-#result-item {
-    display: flex;
-    flex-direction: column;
+.iframe-container {
+    display: none;
+    width: 400px
+    height: 351px;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-gap: 1em;
     align-items: center;
     justify-content: center;
     margin-top: 1em;
+}
+
+@media (min-width: 700px) {
+    .iframe-container {
+        grid-template-columns: repeat(2, minmax(400px, 1fr));
+    }
+}
+
+.iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+#copy-button {
+    margin-top: 1em;
+    display: none;
 }
 
 #logs {
     margin-top: 1em;
     font-size: 1em;
-    color: #333;
+    color: rgb(255, 255, 255);
 }
 
 #github-logo {
     width: 30px;
+    margin-top: 1em;
     margin-bottom: 1em;
+    /*invert colors*/
+    filter: invert(100%);
 }

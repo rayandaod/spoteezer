@@ -53,6 +53,10 @@ def convert_item(init_item: Item, logger=None):
         return DeezerItem(search_params=init_item.search_params,
                           item_type=init_item.type, logger=logger)
 
+    if logger is not None:
+        logger.info(
+            f'Converted {init_item.PLATFORM} item to {result_item.PLATFORM} item')
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
