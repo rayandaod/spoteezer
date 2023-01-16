@@ -15,12 +15,12 @@
     
     <div id="center-elems">
         <input id="input-url" placeholder="Deezer or Spotify URL (track, album, or artist)">
-        <button id="convert-button" class="button">Convert</button>
+        <button id="convert-button" class="button" type=submit>Convert</button>
     </div>
 
     <div class="iframe-container">
-        <iframe id="init-iframe" class="iframe" src="" frameborder="0" allowtransparency="false" allow="encrypted-media; clipboard-write"></iframe>
-        <iframe id="result-iframe" class="iframe" src="" frameBorder="0" allowfullscreen="false" allow="encrypted-media; clipboard-write"></iframe>
+        <iframe style="border-radius:12px" id="init-iframe" class="iframe" src="" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+        <iframe style="border-radius:12px" id="result-iframe" class="iframe" src="" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
     </div>
     
     <button id="copy-button" class="button" onclick="copyToClipboard()">Copy link</button>
@@ -44,6 +44,8 @@
         
         const logElement = document.getElementById('logs');
 
+        inputURL.focus();
+
         // function generating the embed URL based on the type, id, and platform
         function generateEmbedURL(_type, id, platform) {
             if (platform == 'deezer') {
@@ -54,9 +56,19 @@
                 return base_url;
 
             } else if (platform == 'spotify') {
-                return `https://open.spotify.com/embed/${_type}/${id}`;
+                return `https://open.spotify.com/embed/${_type}/${id}?utm_source=generator`;
             }
         }
+
+        inputURL.addEventListener("keypress", function(event) {
+            // If the user presses the "Enter" key on the keyboard
+            if (event.key === "Enter") {
+                // Cancel the default action, if needed
+                event.preventDefault();
+                // Trigger the button element with a click
+                buttonElement.click();
+            }
+        });
 
         // Add an event listener to the form to handle the submission
         buttonElement.addEventListener('click', (event) => {

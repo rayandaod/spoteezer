@@ -44,7 +44,6 @@ h1 {
     border-radius: 0.5em;
     padding-left: 1em;
     padding-right: 1em;
-    margin-bottom: 1em;
     text-align: center;
     border: 1px solid #00acc1;
 }
@@ -67,9 +66,9 @@ h1 {
 
 .iframe-container {
     display: none;
-    width: 400px;
-    height: 351px;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    width: 100%;
+    height: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
     grid-gap: 1em;
     align-items: center;
     justify-content: center;
@@ -78,7 +77,7 @@ h1 {
 
 @media (min-width: 700px) {
     .iframe-container {
-        grid-template-columns: repeat(2, minmax(400px, 1fr));
+        grid-template-columns: repeat(2, minmax(600px, 1fr));
     }
 }
 
