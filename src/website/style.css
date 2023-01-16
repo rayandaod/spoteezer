@@ -67,7 +67,7 @@ h1 {
 
 .iframe-container {
     display: none;
-    width: 400px
+    width: 400px;
     height: 351px;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     grid-gap: 1em;
