@@ -22,15 +22,16 @@ def convert():
         dict: The response to the initial POST request.
     """
     # Get the init URL from the request body
-    init_url = request.get_json()['initURL']
+    init_url = request.get_json().get('initURL', None)
 
     try:
         init_item = get_item(init_url, logger=app.logger)
         result_item = convert_item(init_item, logger=app.logger)
 
         # Return the result dictionary and a success message
-        response = {'result': {'init': init_item.web_info,
-                               'result': result_item.web_info},
+        response = {'result': {
+            'init': init_item.web_info,
+            'result': result_item.web_info},
                     'log': 'Conversion successful!'}
 
     except FileNotFoundError:

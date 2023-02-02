@@ -24,7 +24,7 @@ def get_item(URL: str, logger=None):
     if 'deezer' in URL:
         item = DeezerItem(url=URL, logger=logger)
     elif 'spotify' in URL:
-        item = SpotifyItem(URL=URL, logger=logger)
+        item = SpotifyItem(url=URL, logger=logger)
     else:
         raise ValueError(
             f'Could not determine between Deezer and Spotify from URL {URL}...')
@@ -47,11 +47,22 @@ def convert_item(init_item: Item, logger=None):
         Item: The item from the given URL.
     """
     if type(init_item) == DeezerItem:
-        return SpotifyItem(search_params=init_item.search_params,
-                           item_type=init_item.type, logger=logger)
+
+        if init_item.type == 'track':
+            return SpotifyItem(isrc=init_item.isrc, logger=logger)
+
+        else:
+            return SpotifyItem(search_params=init_item.search_params,
+                            item_type=init_item.type, logger=logger)
+    
     elif type(init_item) == SpotifyItem:
-        return DeezerItem(search_params=init_item.search_params,
-                          item_type=init_item.type, logger=logger)
+
+        if init_item.type == 'track':
+            return DeezerItem(isrc=init_item.isrc, logger=logger)
+
+        else:
+            return DeezerItem(search_params=init_item.search_params,
+                            item_type=init_item.type, logger=logger)
 
     if logger is not None:
         logger.info(

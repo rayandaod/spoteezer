@@ -157,7 +157,8 @@ class DeezerItem(Item):
 
     PLATFORM = 'deezer'
 
-    def __init__(self, url=None, search_params=None, item_type=None, logger=None):
+    def __init__(self, url=None, search_params=None, item_type=None, isrc=None,
+                 logger=None):
         """Instanciates a Deezer item based on the given parameter(s).
 
         Args:
@@ -175,14 +176,23 @@ class DeezerItem(Item):
             self.type = self.url.split('/')[-2]
             self.id = int(self.url.split('/')[-1].split('?')[0])
             self.raw_info = self.get_raw_info_from_id(self.id, self.type)
+            self.isrc = self.raw_info['isrc']
             self.search_params = self.get_search_params(self.raw_info)
 
-        # Constructor from search parameters
+        # Constructor from feature search parameters
         elif search_params is not None:
             self.search_params = search_params
             self.type = item_type
             results = self.search(self.search_params, self.type)
             self.raw_info = self.get_first_raw_info(results)
+            self.id = self.raw_info['id']
+            self.url = self.raw_info['link']
+
+        # Constructor from isrc search
+        elif isrc is not None:
+            self.type = 'track'
+            self.isrc = isrc
+            self.raw_info = self.get_track_from_isrc(isrc)
             self.id = self.raw_info['id']
             self.url = self.raw_info['link']
 
@@ -315,15 +325,29 @@ class DeezerItem(Item):
         return results
 
 
+    def get_track_from_isrc(self, isrc):
+        """Searches the Deezer database with the given ISRC.
+
+        Args:
+            isrc (str): The ISRC to search with.
+
+        Returns:
+            dict: The results obtained from the search.
+        """
+
+        return DEEZER.request('GET', f'track/isrc:{isrc}').as_dict()
+
+
 class SpotifyItem(Item):
 
     PLATFORM = 'spotify'
 
-    def __init__(self, URL=None, search_params=None, item_type=None, logger=None):
+    def __init__(self, url=None, search_params=None, item_type=None, isrc=None,
+                 logger=None):
         """Constructor for the SpotifyItem class.
 
         Args:
-            URL (str, optional): The Spotify URL to the item. Defaults to None.
+            url (str, optional): The Spotify URL to the item. Defaults to None.
             search_params (dict, optional): The search parameters to search with. Defaults to None.
             item_type (str, optional): The Spotify item type, i.e track, album, or artist. Defaults to None.
             logger (Logger, optional): The logger to use. Defaults to None.
@@ -334,8 +358,8 @@ class SpotifyItem(Item):
         #  Constructor from URL
         #  Infer type and id from URL
         #  Use id and type to get info from Spotify API
-        if URL:
-            super().__init__(URL)
+        if url:
+            super().__init__(url)
 
             parsed_url = urlparse(self.url)
             if parsed_url.netloc != 'open.spotify.com':
@@ -346,11 +370,12 @@ class SpotifyItem(Item):
             self.type = path_parts[1]
             self.id = path_parts[2]
             self.raw_info = self.get_raw_info_from_id(self.id, self.type)
+            self.isrc = self.raw_info['external_ids']['isrc']
             self.search_params = self.get_search_params(self.raw_info)
 
         #  Constructor from search info
         #  Meaning that we want to search for the item on Spotify
-        else:
+        elif search_params and item_type:
             self.search_params = search_params
             self.type = item_type
 
@@ -363,6 +388,14 @@ class SpotifyItem(Item):
                                                     'spotify',
                                                     substring=self.type)
 
+            self.id = self.raw_info['id']
+
+        
+        elif isrc:
+            self.type = 'track'
+            self.isrc = isrc
+            self.raw_info = self.get_track_from_isrc(self.isrc)
+            self.url = self.raw_info['external_urls']['spotify']
             self.id = self.raw_info['id']
 
         self.web_info = self.extract_web_info()
@@ -508,11 +541,22 @@ class SpotifyItem(Item):
             f'Spotify results = {pp.pformat(results)}', level='debug')
         return results
 
+    def get_track_from_isrc(self, isrc):
+        """Gets the track info from the Spotify API using the ISRC.
+
+        Args:
+            isrc (string): The ISRC of the track.
+
+        Returns:
+            dictionary: The track info from the Spotify API.
+        """
+        return SPOTIFY.search(q=f'isrc:{isrc}', type='track')['tracks']['items'][0]
+
 
 if __name__ == '__main__':
     deezer_item = DeezerItem(url='https://deezer.page.link/i91thUP4sU1CimYi6')
     pp.pprint(deezer_item.web_info)
 
     spotify_item = SpotifyItem(
-        URL='https://open.spotify.com/track/5NGBpnkXvvC1iOLByxVsRG?si=edaa77825a414659')
+        url='https://open.spotify.com/track/5NGBpnkXvvC1iOLByxVsRG?si=edaa77825a414659')
     pp.pprint(spotify_item.web_info)
