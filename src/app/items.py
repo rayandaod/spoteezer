@@ -176,8 +176,10 @@ class DeezerItem(Item):
             self.type = self.url.split('/')[-2]
             self.id = int(self.url.split('/')[-1].split('?')[0])
             self.raw_info = self.get_raw_info_from_id(self.id, self.type)
-            self.isrc = self.raw_info['isrc']
             self.search_params = self.get_search_params(self.raw_info)
+
+            if self.type == 'track':
+                self.isrc = self.raw_info['isrc']
 
         # Constructor from feature search parameters
         elif search_params is not None:
@@ -338,7 +340,7 @@ class DeezerItem(Item):
         return DEEZER.request('GET', f'track/isrc:{isrc}').as_dict()
 
 
-class SpotifyItem(Item):
+class  SpotifyItem(Item):
 
     PLATFORM = 'spotify'
 
@@ -370,8 +372,10 @@ class SpotifyItem(Item):
             self.type = path_parts[1]
             self.id = path_parts[2]
             self.raw_info = self.get_raw_info_from_id(self.id, self.type)
-            self.isrc = self.raw_info['external_ids']['isrc']
             self.search_params = self.get_search_params(self.raw_info)
+
+            if self.type == 'track':
+                self.isrc = self.raw_info['external_ids']['isrc']
 
         #  Constructor from search info
         #  Meaning that we want to search for the item on Spotify
@@ -390,7 +394,6 @@ class SpotifyItem(Item):
 
             self.id = self.raw_info['id']
 
-        
         elif isrc:
             self.type = 'track'
             self.isrc = isrc
