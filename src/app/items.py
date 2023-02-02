@@ -153,6 +153,11 @@ class Item(ABC):
         pass
 
 
+    @abstractmethod
+    def get_track_from_isrc(self, isrc):
+        pass
+
+
 class DeezerItem(Item):
 
     PLATFORM = 'deezer'
@@ -259,7 +264,7 @@ class DeezerItem(Item):
             search_params = {
                 'album': preprocess_string(raw_info['title']),
                 'artist': preprocess_string(raw_info['artist']['name']),
-                'tracks' : [preprocess_string(track['title']) for track in raw_info['tracks']['data']]
+                'tracks' : [preprocess_string(track['title']) for track in raw_info['tracks']]
             }
 
         elif self.type == 'artist':
