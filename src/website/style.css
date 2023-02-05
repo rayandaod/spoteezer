@@ -97,11 +97,3 @@ h1 {
     font-size: 1em;
     color: rgb(255, 255, 255);
 }
-
-#github-logo {
-    width: 30px;
-    margin-top: 1em;
-    margin-bottom: 1em;
-    /*invert colors*/
-    filter: invert(100%);
-}

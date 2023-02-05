@@ -8,7 +8,7 @@ from convert_link import get_item, convert_item
 app = Flask(__name__)
 CORS(app)
 logging.basicConfig(filename='logs.log',
-                    level=logging.DEBUG,
+                    level=logging.ERROR,
                     format='%(asctime)s %(levelname)s: %(message)s')
 
 

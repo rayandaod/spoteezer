@@ -52,4 +52,6 @@ def preprocess_string(string: str):
         if char in string:
             string = string.replace(char, SPE_CHARS[1][1])
 
-    return string.lower()
+    string = string.lower()
+
+    return string

@@ -8,7 +8,7 @@ from items import DeezerItem, Item, SpotifyItem
 pp = pprint.PrettyPrinter(indent=4)
 
 
-def get_item(URL: str, logger=None):
+def get_item(url: str, logger=None):
     """Gets the item from the given URL.
 
     Args:
@@ -21,16 +21,16 @@ def get_item(URL: str, logger=None):
     Returns:
         Item: The item from the given URL.
     """
-    if 'deezer' in URL:
-        item = DeezerItem(url=URL, logger=logger)
-    elif 'spotify' in URL:
-        item = SpotifyItem(url=URL, logger=logger)
+    if 'deezer' in url:
+        item = DeezerItem(url=url, logger=logger)
+    elif 'spotify' in url:
+        item = SpotifyItem(url=url, logger=logger)
     else:
         raise ValueError(
-            f'Could not determine between Deezer and Spotify from URL {URL}...')
+            f'Could not determine between Deezer and Spotify from URL {url}...')
 
     if logger is not None:
-        logger.info(f'Initialized {item.PLATFORM} item from URL {URL}')
+        logger.info(f'Initialized {item.PLATFORM} item from URL {url}')
 
     return item
 
@@ -46,23 +46,13 @@ def convert_item(init_item: Item, logger=None):
     Returns:
         Item: The item from the given URL.
     """
-    if type(init_item) == DeezerItem:
+    if type(init_item) is DeezerItem:
 
-        if init_item.type == 'track':
-            return SpotifyItem(isrc=init_item.isrc, logger=logger)
-
-        else:
-            return SpotifyItem(search_params=init_item.search_params,
-                            item_type=init_item.type, logger=logger)
+        return SpotifyItem(item=init_item, logger=logger)
     
-    elif type(init_item) == SpotifyItem:
+    elif type(init_item) is SpotifyItem:
 
-        if init_item.type == 'track':
-            return DeezerItem(isrc=init_item.isrc, logger=logger)
-
-        else:
-            return DeezerItem(search_params=init_item.search_params,
-                            item_type=init_item.type, logger=logger)
+        return DeezerItem(item=init_item, logger=logger)
 
     if logger is not None:
         logger.info(
@@ -77,7 +67,7 @@ if __name__ == "__main__":
 
     # Initialize logger
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)  # Change to logging.DEBUG for more info
+    logger.setLevel(logging.DEBUG)  # Change to logging.DEBUG for more info
     logger.addHandler(logging.StreamHandler())
 
     #  Creat the item from the link and convert it
