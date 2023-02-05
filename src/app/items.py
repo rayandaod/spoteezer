@@ -377,8 +377,8 @@ class  SpotifyItem(Item):
         stop_words = ['with', 'feat', 'ft', 'featuring']
         
         for word in stop_words:
-            parenthesis_word = f'({word} '
-            bracket_word = f'[{word} '
+            parenthesis_word = f' ({word} '
+            bracket_word = f' [{word} '
 
             if parenthesis_word in string:
                 string = string[:string.index(parenthesis_word)]
