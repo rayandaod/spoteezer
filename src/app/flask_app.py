@@ -36,12 +36,12 @@ def convert():
 
     except FileNotFoundError:
         response = {'result': {},
-                    'log': 'Could not find track in Spotify...'}
+                    'log': 'Could not find track...'}
 
     except Exception as e:
         app.logger.error(e)
         response = {'result': {},
-                    'log': f'Something went wrong: {e} Please try again!'}
+                    'log': f'Something went wrong.\n{e}\nPlease try again!'}
 
     return response
 
