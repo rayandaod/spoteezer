@@ -27,7 +27,7 @@ def get_item(url: str, logger=None):
         item = SpotifyItem(url=url, logger=logger)
     else:
         raise ValueError(
-            f'Could not determine between Deezer and Spotify from URL "{url[:100]}"...')
+            f'Could not determine between Deezer and Spotify from URL.')
 
     if logger is not None:
         logger.info(f'Initialized {item.PLATFORM} item from URL {url}')
