@@ -8,10 +8,8 @@
 </head>
 
 <body>
-    <div id="head">
-        <h1>Spoteezer</h1>
-        <img src="assets/spoteezer.png" alt="Spoteezer logo" id="spoteezer-logo">
-    </div>
+    <br>
+    <br>
     
     <div id="center-elems">
         <input id="input-url" placeholder="Enter a Deezer or Spotify link (track, album, artist)">
@@ -25,11 +23,9 @@
     </div>
 
     <div class="iframe-container">
-        <iframe style="border-radius:12px" id="init-iframe" class="iframe" src="" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-        <iframe style="border-radius:12px" id="result-iframe" class="iframe" src="" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+        <iframe style="border-radius:12px" id="init-iframe" class="iframe" src="" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in- picture" loading="lazy"></iframe>
+        <iframe style="border-radius:12px" id="result-iframe" class="iframe" src="" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in- picture" loading="lazy"></iframe>
     </div>
-
-    <div id="logs"></div>
     
 
     <script type="text/javascript">
@@ -42,8 +38,6 @@
 
         const resultItem = document.getElementById('result-item');
         result_url = '';
-        
-        const logElement = document.getElementById('logs');
 
         document.getElementsByClassName('loader-container')[0].style.display = 'none';
 
@@ -64,7 +58,6 @@
         // function to convert the URL
         function convert(initURL) {
             document.getElementsByClassName('iframe-container')[0].style.display = 'none';
-            logElement.innerHTML = '';
 
             document.getElementsByClassName('loader-container')[0].style.display = 'block';
 
@@ -99,23 +92,17 @@
 
                     document.getElementsByClassName('iframe-container')[0].style.display = 'grid';
                     document.body.style.backgroundImage = `url(${init_img_url})`;
-                    document.body.style.backgroundSize = 'cover';
-
-                    const log = data.log;
+                    document.body.style.backgroundRepeat = "repeat";
 
                     init_iframe.src = generateEmbedURL(init_type, init_id, init_platform)
                     result_iframe.src = generateEmbedURL(result_type, result_id, result_platform)
-
-                    // Set the log element to the log messages
-                    logElement.innerHTML = log;
 
                     navigator.clipboard.writeText(result_url);
                 })
 
                 .catch((error) => {
-                    // If there is an error, log it to the console and set the log element to the error message
+                    // If there is an error, log it to the console
                     console.error(error);
-                    logElement.innerHTML = `An error occurred: ${error}. Try again.`;
                 });
         }
 
