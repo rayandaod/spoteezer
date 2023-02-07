@@ -15,7 +15,13 @@
     
     <div id="center-elems">
         <input id="input-url" placeholder="Enter a Deezer or Spotify link (track, album, artist)">
-        <button id="convert-button" class="button" type=submit>Paste & Convert & Copy</button>
+        <button id="convert-button" class="button" type=submit>Convert & Copy</button>
+    </div>
+
+    <br>
+
+    <div class="loader-container">
+        <div class="spinner"></div>
     </div>
 
     <div class="iframe-container">
@@ -39,40 +45,32 @@
         
         const logElement = document.getElementById('logs');
 
-        inputURL.focus();
+        document.getElementsByClassName('loader-container')[0].style.display = 'none';
+
+        // Add paste event listener
+        document.addEventListener('paste', (event) => {
+            const paste = (event.clipboardData || window.clipboardData).getData('text');
+            inputURL.value = paste;
+            convert(paste);
+        });
 
         // Add an event listener to the form to handle the submission
         buttonElement.addEventListener('click', (event) => {
             event.preventDefault();
-
-            document.getElementsByClassName('iframe-container')[0].style.display = 'none';
-
-            // Clear the log element
-            logElement.innerHTML = '';
-
-            // Get the URL from the input
-            const initURL = inputURL.value;
-            if (initURL == '') {
-                navigator.clipboard.readText()
-                    .then(text => {
-                        inputURL.value = text;
-                        convert(text);
-                    })
-                    .catch(err => {
-                        console.error('Failed to read clipboard contents: ', err);
-                    });
-            }
-            else {
-                convert(initURL);
-            }
+            convert(inputURL.value);
         });
 
 
         // function to convert the URL
         function convert(initURL) {
+            document.getElementsByClassName('iframe-container')[0].style.display = 'none';
+            logElement.innerHTML = '';
+
+            document.getElementsByClassName('loader-container')[0].style.display = 'block';
+
             // Send a GET request to the server with the init URL
-            // fetch('https://rayandaod.pythonanywhere.com/convert', {
-            fetch('http://127.0.0.1:8080/convert', {
+            fetch('https://rayandaod.pythonanywhere.com/convert', {
+            // fetch('http://127.0.0.1:8080/convert', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ initURL: initURL }),
@@ -83,6 +81,8 @@
                 })
 
                 .then((data) => {
+                    document.getElementsByClassName('loader-container')[0].style.display = 'none';
+
                     const init_type = data.result.init.type;
                     const init_id = data.result.init.id;
                     const init_platform = data.result.init.platform;

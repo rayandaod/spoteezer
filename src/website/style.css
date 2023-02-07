@@ -15,6 +15,7 @@ h1 {
     margin-top: 1em;
     font-size: 4em;
     color: rgb(255, 255, 255);
+    text-shadow: 0 0 70px #00acc1;
 }
 
 #head {
@@ -51,7 +52,7 @@ h1 {
 }
 
 .button {
-    width: 15em;
+    width: 10em;
     height: 2em;
     font-size: 1.5em;
     border: none;
@@ -64,6 +65,24 @@ h1 {
 
 .button:hover {
     background-color: #00838f;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 8px solid;
+    border-color: #3d5af1 transparent #3d5af1 transparent;
+    border-radius: 50%;
+    animation: spin-anim 1.2s linear infinite;
+}
+
+@keyframes spin-anim {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .iframe-container {
