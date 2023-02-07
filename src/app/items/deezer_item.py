@@ -138,11 +138,11 @@ class DeezerItem(Item):
             str: The image URL of the item.
         """
         if self.type == 'track':
-            return self.raw_info['album']['cover_small']
+            return self.raw_info['album']['cover_big']
         elif self.type == 'album':
-            return self.raw_info['cover_small']
+            return self.raw_info['cover_big']
         elif self.type == 'artist':
-            return self.raw_info['picture_small']
+            return self.raw_info['picture_big']
 
     def search(self, search_params, _type, limit=1):
         """Searches the Deeezer database with the given search parameters.
