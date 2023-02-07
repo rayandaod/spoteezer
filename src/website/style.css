@@ -1,5 +1,6 @@
 body {
     margin: 0;
+    margin-bottom: 50px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -11,6 +12,7 @@ body {
 }
 
 h1 {
+    margin-top: 1em;
     font-size: 4em;
     color: rgb(255, 255, 255);
 }
@@ -49,7 +51,7 @@ h1 {
 }
 
 .button {
-    width: 10em;
+    width: 15em;
     height: 2em;
     font-size: 1.5em;
     border: none;
@@ -82,14 +84,10 @@ h1 {
 }
 
 .iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-}
-
-#copy-button {
-    margin-top: 1em;
-    display: none;
+    width: 90%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 #logs {

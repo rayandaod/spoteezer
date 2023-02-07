@@ -14,18 +14,17 @@
     </div>
     
     <div id="center-elems">
-        <input id="input-url" placeholder="Deezer or Spotify URL (track, album, or artist)">
-        <button id="convert-button" class="button" type=submit>Convert</button>
+        <input id="input-url" placeholder="Enter a Deezer or Spotify link (track, album, artist)">
+        <button id="convert-button" class="button" type=submit>Paste & Convert & Copy</button>
     </div>
 
     <div class="iframe-container">
         <iframe style="border-radius:12px" id="init-iframe" class="iframe" src="" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
         <iframe style="border-radius:12px" id="result-iframe" class="iframe" src="" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
     </div>
-    
-    <button id="copy-button" class="button" onclick="copyToClipboard()">Copy link</button>
 
     <div id="logs"></div>
+    
 
     <script type="text/javascript">
         const form = document.getElementById('center-elems');
@@ -42,6 +41,85 @@
 
         inputURL.focus();
 
+        // Add an event listener to the form to handle the submission
+        buttonElement.addEventListener('click', (event) => {
+            event.preventDefault();
+
+            document.getElementsByClassName('iframe-container')[0].style.display = 'none';
+
+            // Clear the log element
+            logElement.innerHTML = '';
+
+            // Get the URL from the input
+            const initURL = inputURL.value;
+            if (initURL == '') {
+                navigator.clipboard.readText()
+                    .then(text => {
+                        inputURL.value = text;
+                        convert(text);
+                    })
+                    .catch(err => {
+                        console.error('Failed to read clipboard contents: ', err);
+                    });
+            }
+            else {
+                convert(initURL);
+            }
+        });
+
+
+        // function to convert the URL
+        function convert(initURL) {
+            // Send a GET request to the server with the init URL
+            // fetch('https://rayandaod.pythonanywhere.com/convert', {
+            fetch('http://127.0.0.1:8080/convert', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ initURL: initURL }),
+            })
+                .then((response) => {
+                    // When the server responds, parse the response as JSON
+                    return response.json();
+                })
+
+                .then((data) => {
+                    const init_type = data.result.init.type;
+                    const init_id = data.result.init.id;
+                    const init_platform = data.result.init.platform;
+                    const init_url = data.result.init.url;
+                    const init_img_url = data.result.init.img_url;
+                    const init_iframe = document.getElementById('init-iframe');
+
+                    const result_type = data.result.result.type;
+                    const result_id = data.result.result.id;
+                    const result_platform = data.result.result.platform;
+                    const result_url = data.result.result.url;
+                    const result_img_url = data.result.result.img_url;
+                    const result_iframe = document.getElementById('result-iframe');
+
+                    document.getElementsByClassName('iframe-container')[0].style.display = 'grid';
+                    document.body.style.backgroundImage = `url(${init_img_url})`;
+                    document.body.style.backgroundSize = 'cover';
+
+                    const log = data.log;
+
+                    init_iframe.src = generateEmbedURL(init_type, init_id, init_platform)
+                    result_iframe.src = generateEmbedURL(result_type, result_id, result_platform)
+
+                    // Set the log element to the log messages
+                    logElement.innerHTML = log;
+
+                    navigator.clipboard.writeText(result_url);
+                })
+
+                .catch((error) => {
+                    // If there is an error, log it to the console and set the log element to the error message
+                    console.error(error);
+                    logElement.innerHTML = `An error occurred: ${error}. Try again.`;
+                });
+        }
+
+
         // function generating the embed URL based on the type, id, and platform
         function generateEmbedURL(_type, id, platform) {
             if (platform == 'deezer') {
@@ -56,6 +134,7 @@
             }
         }
 
+
         inputURL.addEventListener("keypress", function(event) {
             // If the user presses the "Enter" key on the keyboard
             if (event.key === "Enter") {
@@ -65,72 +144,6 @@
                 buttonElement.click();
             }
         });
-
-        // Add an event listener to the form to handle the submission
-        buttonElement.addEventListener('click', (event) => {
-            event.preventDefault();
-
-            // Get the URL from the input
-            const initURL = inputURL.value;
-
-            document.getElementsByClassName('iframe-container')[0].style.display = 'none';
-
-            // Hide the copy button
-            const copyButton = document.getElementById('copy-button');
-            copyButton.style.display = 'none';
-
-            // Clear the log element
-            logElement.innerHTML = '';
-
-            // Send a GET request to the server with the init URL
-            fetch('https://rayandaod.pythonanywhere.com/convert', {
-            // fetch('http://127.0.0.1:8080/convert', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ initURL: initURL }),
-            })
-                .then((response) => {
-                    // When the server responds, parse the response as JSON
-                    return response.json();
-                })
-
-                .then((data) => {
-                    const init_type = data.result.init.type;
-                    const init_id = data.result.init.id;
-                    const init_platform = data.result.init.platform;
-                    init_url = data.result.init.url;
-                    const init_iframe = document.getElementById('init-iframe');
-
-                    const result_type = data.result.result.type;
-                    const result_id = data.result.result.id;
-                    const result_platform = data.result.result.platform;
-                    result_url = data.result.result.url;
-                    const result_iframe = document.getElementById('result-iframe');
-
-                    document.getElementsByClassName('iframe-container')[0].style.display = 'grid';
-
-                    copyButton.style.display = 'block';
-
-                    const log = data.log;
-
-                    init_iframe.src = generateEmbedURL(init_type, init_id, init_platform)
-                    result_iframe.src = generateEmbedURL(result_type, result_id, result_platform)
-
-                    // Set the log element to the log messages
-                    logElement.innerHTML = log;
-                })
-
-                .catch((error) => {
-                    // If there is an error, log it to the console and set the log element to the error message
-                    console.error(error);
-                    logElement.innerHTML = `An error occurred: ${error}. Try again.`;
-                });
-        });
-
-        // function to copy the result URL to the clipboard
-        function copyToClipboard() {
-            navigator.clipboard.writeText(result_url);
-        }
 
     </script>
 </body>

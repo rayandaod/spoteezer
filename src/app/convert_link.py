@@ -3,7 +3,9 @@ import pprint
 import logging
 
 from helper import *
-from items import DeezerItem, Item, SpotifyItem
+from items.item import Item
+from items.deezer_item import DeezerItem
+from items.spotify_item import SpotifyItem
 
 pp = pprint.PrettyPrinter(indent=4)
 
