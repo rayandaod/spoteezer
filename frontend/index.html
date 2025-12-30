@@ -11,19 +11,53 @@
 </head>
 
 <body>
-    <div id="center-elems">
-        <div id="error-message" class="error-message" role="alert" aria-live="polite"></div>
-        <input 
-            id="input-url" 
-            type="text"
-            placeholder="Enter a Deezer or Spotify link (track, album, artist)"
-            aria-label="Enter a Deezer or Spotify link"
-            autocomplete="off">
-        <div class="button-container">
-            <button id="convert-button" class="button" type="submit" aria-label="Convert and copy link">Convert & Copy</button>
-            <button id="clear-button" class="button button-clear" type="button" aria-label="Clear input" style="display: none;">Clear</button>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <header class="main-header">
+        <div class="header-content">
+            <img src="assets/spoteezer.png" alt="Spoteezer logo" class="header-logo">
+            <h1 class="header-title">Spoteezer</h1>
+            <p class="header-tagline">Convert between Spotify and Deezer links</p>
+            <div class="platform-logos">
+                <img src="assets/spotify_logo.png" alt="Spotify" class="platform-logo" title="Spotify">
+                <span class="platform-separator">↔</span>
+                <img src="assets/deezer_logo.png" alt="Deezer" class="platform-logo" title="Deezer">
+            </div>
         </div>
-    </div>
+    </header>
+
+    <main id="main-content">
+        <div id="center-elems">
+            <div id="error-message" class="error-message" role="alert" aria-live="polite"></div>
+            <div class="input-wrapper">
+                <div class="platform-indicator" id="platform-indicator" style="display: none;">
+                    <img id="platform-indicator-icon" src="" alt="" class="platform-indicator-icon">
+                </div>
+                <input 
+                    id="input-url" 
+                    type="text"
+                    placeholder="Enter a Deezer or Spotify link (track, album, artist)"
+                    aria-label="Enter a Deezer or Spotify link"
+                    autocomplete="off">
+            </div>
+            <div class="button-container">
+                <button id="convert-button" class="button" type="submit" aria-label="Convert and copy link">Convert & Copy</button>
+                <button id="clear-button" class="button button-clear" type="button" aria-label="Clear input" style="display: none;">Clear</button>
+            </div>
+            <div id="help-section" class="help-section">
+                <h3>How it works</h3>
+                <p>Paste or enter a Spotify or Deezer link for a track, album, artist, or playlist. We'll convert it to the other platform and copy the link to your clipboard.</p>
+                <div class="examples">
+                    <h4>Try these examples:</h4>
+                    <button class="example-link" data-url="https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT">Spotify Track</button>
+                    <button class="example-link" data-url="https://www.deezer.com/track/3135556">Deezer Track</button>
+                    <button class="example-link" data-url="https://open.spotify.com/album/1ATL5GLyefJaxhQzSPVrLX">Spotify Album</button>
+                    <button class="example-link" data-url="https://www.deezer.com/album/302127">Deezer Album</button>
+                </div>
+                <p class="keyboard-hint">💡 Tip: Press <kbd>⌘K</kbd> or <kbd>Ctrl+K</kbd> to focus the input field</p>
+            </div>
+        </div>
+    </main>
 
     <div class="loader-container" role="status" aria-live="polite">
         <div class="spinner"></div>
@@ -31,9 +65,22 @@
     </div>
 
     <div class="iframe-container" role="region" aria-label="Conversion results">
-        <div class="iframe-wrapper">
+        <div class="iframe-wrapper" id="init-wrapper">
             <div class="iframe-header">
-                <span class="platform-label" id="init-platform-label">Original</span>
+                <div class="platform-header-content">
+                    <img id="init-platform-logo" src="" alt="" class="platform-logo-small" style="display: none;">
+                    <span class="platform-label" id="init-platform-label">Original</span>
+                </div>
+            </div>
+            <div class="metadata-display" id="init-metadata" style="display: none;">
+                <img id="init-cover-art" src="" alt="Cover art" class="cover-art">
+                <div class="metadata-info">
+                    <div class="metadata-type" id="init-type"></div>
+                    <div class="metadata-details" id="init-details"></div>
+                </div>
+            </div>
+            <div class="skeleton-loader" id="init-skeleton" style="display: none;">
+                <div class="skeleton-content"></div>
             </div>
             <iframe 
                 id="init-iframe" 
@@ -50,11 +97,31 @@
             </iframe>
             <div class="url-display">
                 <a id="init-url-link" href="" target="_blank" rel="noopener noreferrer" class="url-link" aria-label="Open original URL in new tab"></a>
+                <button id="copy-init-button" class="copy-button" aria-label="Copy original URL to clipboard" title="Copy to clipboard" style="display: none;">
+                    <svg class="copy-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <span class="copy-text">Copy</span>
+                </button>
             </div>
         </div>
-        <div class="iframe-wrapper">
+        <div class="iframe-wrapper" id="result-wrapper">
             <div class="iframe-header">
-                <span class="platform-label" id="result-platform-label">Converted</span>
+                <div class="platform-header-content">
+                    <img id="result-platform-logo" src="" alt="" class="platform-logo-small" style="display: none;">
+                    <span class="platform-label" id="result-platform-label">Converted</span>
+                </div>
+            </div>
+            <div class="metadata-display" id="result-metadata" style="display: none;">
+                <img id="result-cover-art" src="" alt="Cover art" class="cover-art">
+                <div class="metadata-info">
+                    <div class="metadata-type" id="result-type"></div>
+                    <div class="metadata-details" id="result-details"></div>
+                </div>
+            </div>
+            <div class="skeleton-loader" id="result-skeleton" style="display: none;">
+                <div class="skeleton-content"></div>
             </div>
             <iframe 
                 id="result-iframe" 
@@ -72,10 +139,25 @@
             <div class="url-display">
                 <a id="result-url-link" href="" target="_blank" rel="noopener noreferrer" class="url-link" aria-label="Open converted URL in new tab"></a>
                 <button id="copy-button" class="copy-button" aria-label="Copy converted URL to clipboard" title="Copy to clipboard">
-                    <span class="copy-icon">📋</span>
+                    <svg class="copy-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <svg class="copy-icon-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
                     <span class="copy-text">Copy</span>
                 </button>
             </div>
+        </div>
+        <div class="swap-container">
+            <button id="swap-button" class="swap-button" aria-label="Swap conversion direction" title="Convert in reverse direction" style="display: none;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                <span>Swap</span>
+            </button>
         </div>
     </div>
 
@@ -94,9 +176,32 @@
         const initUrlLink = document.getElementById('init-url-link');
         const resultUrlLink = document.getElementById('result-url-link');
         const copyButton = document.getElementById('copy-button');
+        const copyInitButton = document.getElementById('copy-init-button');
         const initPlatformLabel = document.getElementById('init-platform-label');
         const resultPlatformLabel = document.getElementById('result-platform-label');
         const toast = document.getElementById('toast');
+        const platformIndicator = document.getElementById('platform-indicator');
+        const platformIndicatorIcon = document.getElementById('platform-indicator-icon');
+        const initPlatformLogo = document.getElementById('init-platform-logo');
+        const resultPlatformLogo = document.getElementById('result-platform-logo');
+        const swapButton = document.getElementById('swap-button');
+        const helpSection = document.getElementById('help-section');
+        const initMetadata = document.getElementById('init-metadata');
+        const resultMetadata = document.getElementById('result-metadata');
+        const initCoverArt = document.getElementById('init-cover-art');
+        const resultCoverArt = document.getElementById('result-cover-art');
+        const initType = document.getElementById('init-type');
+        const resultType = document.getElementById('result-type');
+        const initDetails = document.getElementById('init-details');
+        const resultDetails = document.getElementById('result-details');
+        const initSkeleton = document.getElementById('init-skeleton');
+        const resultSkeleton = document.getElementById('result-skeleton');
+        const initWrapper = document.getElementById('init-wrapper');
+        const resultWrapper = document.getElementById('result-wrapper');
+
+        // Store current conversion data for swap functionality
+        let currentInitData = null;
+        let currentResultData = null;
 
         // Initialize UI state
         loaderContainer.style.display = 'none';
@@ -163,20 +268,104 @@
         }
 
         /**
+         * Detects platform from URL and updates indicator
+         * @param {string} url - The URL to check
+         */
+        function updatePlatformIndicator(url) {
+            const trimmedUrl = url.trim();
+            const inputWrapper = inputURL.closest('.input-wrapper');
+            if (SPOTIFY_PATTERN.test(trimmedUrl)) {
+                platformIndicator.style.display = 'flex';
+                platformIndicatorIcon.src = 'assets/spotify_logo.png';
+                platformIndicatorIcon.alt = 'Spotify';
+                if (inputWrapper) inputWrapper.classList.add('has-indicator');
+            } else if (DEEZER_PATTERN.test(trimmedUrl)) {
+                platformIndicator.style.display = 'flex';
+                platformIndicatorIcon.src = 'assets/deezer_logo.png';
+                platformIndicatorIcon.alt = 'Deezer';
+                if (inputWrapper) inputWrapper.classList.add('has-indicator');
+            } else {
+                platformIndicator.style.display = 'none';
+                if (inputWrapper) inputWrapper.classList.remove('has-indicator');
+            }
+        }
+
+        /**
+         * Clears previous conversion results
+         */
+        function clearPreviousResults() {
+            // Clear iframe sources
+            initIframe.src = '';
+            resultIframe.src = '';
+            
+            // Clear metadata displays
+            if (initMetadata) initMetadata.style.display = 'none';
+            if (resultMetadata) resultMetadata.style.display = 'none';
+            if (initCoverArt) initCoverArt.src = '';
+            if (resultCoverArt) resultCoverArt.src = '';
+            if (initType) initType.textContent = '';
+            if (resultType) resultType.textContent = '';
+            if (initDetails) initDetails.textContent = '';
+            if (resultDetails) resultDetails.textContent = '';
+            
+            // Clear URL links
+            if (initUrlLink) {
+                initUrlLink.href = '';
+                initUrlLink.textContent = '';
+            }
+            if (resultUrlLink) {
+                resultUrlLink.href = '';
+                resultUrlLink.textContent = '';
+            }
+            
+            // Hide copy buttons
+            if (copyInitButton) copyInitButton.style.display = 'none';
+            
+            // Reset platform logos
+            if (initPlatformLogo) {
+                initPlatformLogo.src = '';
+                initPlatformLogo.style.display = 'none';
+            }
+            if (resultPlatformLogo) {
+                resultPlatformLogo.src = '';
+                resultPlatformLogo.style.display = 'none';
+            }
+            
+            // Reset wrapper classes
+            if (initWrapper) initWrapper.className = 'iframe-wrapper';
+            if (resultWrapper) resultWrapper.className = 'iframe-wrapper';
+            
+            // Hide swap button
+            if (swapButton) swapButton.style.display = 'none';
+        }
+
+        /**
          * Sets the loading state
          * @param {boolean} isLoading - Whether to show loading state
          */
         function setLoadingState(isLoading) {
             if (isLoading) {
+                // Clear previous results before showing loading state
+                clearPreviousResults();
+                
                 loaderContainer.style.display = 'flex';
                 buttonElement.disabled = true;
                 buttonElement.textContent = 'Converting...';
                 iframeContainer.style.display = 'none';
                 hideError();
+                // Show skeleton loaders
+                initSkeleton.style.display = 'block';
+                resultSkeleton.style.display = 'block';
+                initIframe.style.display = 'none';
+                resultIframe.style.display = 'none';
             } else {
                 loaderContainer.style.display = 'none';
                 buttonElement.disabled = false;
                 buttonElement.textContent = 'Convert & Copy';
+                initSkeleton.style.display = 'none';
+                resultSkeleton.style.display = 'none';
+                initIframe.style.display = 'block';
+                resultIframe.style.display = 'block';
             }
         }
 
@@ -221,14 +410,152 @@
         }
 
         /**
-         * Copies text to clipboard with error handling
+         * Updates platform logo in header
+         * @param {HTMLElement} logoElement - The logo image element
+         * @param {string} platform - The platform name
+         */
+        function updatePlatformLogo(logoElement, platform) {
+            if (logoElement) {
+                logoElement.src = `assets/${platform}_logo.png`;
+                logoElement.alt = getPlatformDisplayName(platform);
+                logoElement.style.display = 'block';
+            }
+        }
+
+        /**
+         * Handles image loading errors
+         * @param {HTMLElement} coverArtElement - The cover art image element
+         * @param {HTMLElement} metadataElement - The metadata container
+         */
+        function handleImageError(coverArtElement, metadataElement) {
+            if (coverArtElement) {
+                // Hide the image on error but keep metadata display visible
+                coverArtElement.style.display = 'none';
+            }
+            console.warn('Failed to load cover art image');
+        }
+
+        /**
+         * Sets up image loading with timeout
+         * @param {HTMLElement} imgElement - The image element
+         * @param {string} imgUrl - The image URL
+         * @param {number} timeout - Timeout in milliseconds (default 10 seconds)
+         */
+        function loadImageWithTimeout(imgElement, imgUrl, timeout = 10000) {
+            if (!imgElement || !imgUrl) return;
+            
+            let timeoutId;
+            const cleanup = () => {
+                if (timeoutId) clearTimeout(timeoutId);
+            };
+            
+            imgElement.onload = () => {
+                cleanup();
+            };
+            
+            imgElement.onerror = () => {
+                cleanup();
+                handleImageError(imgElement, null);
+            };
+            
+            // Set timeout
+            timeoutId = setTimeout(() => {
+                if (!imgElement.complete) {
+                    console.warn('Image loading timeout:', imgUrl);
+                    handleImageError(imgElement, null);
+                }
+            }, timeout);
+            
+            imgElement.src = imgUrl;
+        }
+
+        /**
+         * Updates metadata display
+         * @param {HTMLElement} metadataElement - The metadata container
+         * @param {HTMLElement} coverArtElement - The cover art image element
+         * @param {HTMLElement} typeElement - The type display element
+         * @param {HTMLElement} detailsElement - The details display element
+         * @param {Object} data - The item data
+         */
+        function updateMetadata(metadataElement, coverArtElement, typeElement, detailsElement, data) {
+            if (typeElement) {
+                typeElement.textContent = data.type.charAt(0).toUpperCase() + data.type.slice(1);
+            }
+            
+            if (detailsElement) {
+                detailsElement.textContent = `${getPlatformDisplayName(data.platform)} • ${data.type}`;
+            }
+            
+            // Always show metadata display (even without image)
+            if (metadataElement) {
+                metadataElement.style.display = 'flex';
+            }
+            
+            // Handle image loading with error handling and timeout
+            if (data.img_url && coverArtElement) {
+                // Reset display in case it was hidden from previous error
+                coverArtElement.style.display = 'block';
+                coverArtElement.alt = `${data.type} cover art`;
+                
+                // Load image with timeout handling
+                loadImageWithTimeout(coverArtElement, data.img_url, 10000);
+            } else if (coverArtElement) {
+                // No image URL provided, hide the image element
+                coverArtElement.style.display = 'none';
+            }
+        }
+
+        /**
+         * Updates wrapper styles based on platform
+         * @param {HTMLElement} wrapper - The wrapper element
+         * @param {string} platform - The platform name
+         */
+        function updateWrapperStyles(wrapper, platform) {
+            if (wrapper) {
+                wrapper.className = `iframe-wrapper platform-${platform}`;
+            }
+        }
+
+        /**
+         * Swaps the conversion direction
+         */
+        function swapConversion() {
+            if (currentResultData) {
+                inputURL.value = currentResultData.url;
+                convert(currentResultData.url);
+            }
+        }
+
+        /**
+         * Copies text to clipboard with error handling and visual feedback
          * @param {string} text - The text to copy
+         * @param {HTMLElement} button - The copy button element (optional)
          * @returns {Promise<boolean>} - Whether the copy was successful
          */
-        async function copyToClipboard(text) {
+        async function copyToClipboard(text, button = null) {
             try {
                 await navigator.clipboard.writeText(text);
                 showToast('✓ Copied to clipboard!', 'success');
+                
+                // Visual feedback on button
+                if (button) {
+                    const copyIcon = button.querySelector('.copy-icon-svg');
+                    const checkIcon = button.querySelector('.copy-icon-check');
+                    const copyText = button.querySelector('.copy-text');
+                    
+                    if (copyIcon && checkIcon) {
+                        copyIcon.style.display = 'none';
+                        checkIcon.style.display = 'block';
+                        if (copyText) copyText.textContent = 'Copied!';
+                        
+                        setTimeout(() => {
+                            copyIcon.style.display = 'block';
+                            checkIcon.style.display = 'none';
+                            if (copyText) copyText.textContent = 'Copy';
+                        }, 2000);
+                    }
+                }
+                
                 return true;
             } catch (err) {
                 console.error('Failed to copy:', err);
@@ -279,6 +606,18 @@
                     // Extract data from response
                     const initData = data.result.init;
                     const resultData = data.result.result;
+                    
+                    // Store for swap functionality
+                    currentInitData = initData;
+                    currentResultData = resultData;
+
+                    // Update platform logos
+                    updatePlatformLogo(initPlatformLogo, initData.platform);
+                    updatePlatformLogo(resultPlatformLogo, resultData.platform);
+
+                    // Update metadata display
+                    updateMetadata(initMetadata, initCoverArt, initType, initDetails, initData);
+                    updateMetadata(resultMetadata, resultCoverArt, resultType, resultDetails, resultData);
 
                     // Update iframes
                     initIframe.src = generateEmbedURL(initData.type, initData.id, initData.platform);
@@ -293,15 +632,43 @@
                     resultUrlLink.textContent = resultData.url;
                     resultUrlLink.setAttribute('aria-label', `Open converted ${getPlatformDisplayName(resultData.platform)} URL`);
 
+                    // Show copy button for original URL
+                    copyInitButton.style.display = 'flex';
+
                     // Update platform labels
                     initPlatformLabel.textContent = `Original (${getPlatformDisplayName(initData.platform)})`;
                     resultPlatformLabel.textContent = `Converted (${getPlatformDisplayName(resultData.platform)})`;
 
-                    // Set background image
+                    // Update wrapper classes for platform-specific styling
+                    updateWrapperStyles(initWrapper, initData.platform);
+                    updateWrapperStyles(resultWrapper, resultData.platform);
+
+                    // Set background image with error handling
                     if (initData.img_url) {
-                        document.body.style.backgroundImage = `url(${initData.img_url})`;
-                        document.body.style.backgroundRepeat = 'repeat';
+                        const bgImage = new Image();
+                        bgImage.onload = () => {
+                            document.body.style.backgroundImage = `url(${initData.img_url})`;
+                            document.body.style.backgroundRepeat = 'repeat';
+                        };
+                        bgImage.onerror = () => {
+                            // Keep default background if image fails to load
+                            console.warn('Failed to load background image');
+                            document.body.style.backgroundImage = '';
+                        };
+                        // Set timeout for image loading (10 seconds)
+                        setTimeout(() => {
+                            if (!bgImage.complete) {
+                                console.warn('Background image loading timeout');
+                                document.body.style.backgroundImage = '';
+                            }
+                        }, 10000);
+                        bgImage.src = initData.img_url;
+                    } else {
+                        document.body.style.backgroundImage = '';
                     }
+
+                    // Show swap button
+                    swapButton.style.display = 'flex';
 
                     // Show iframe container with animation
                     iframeContainer.style.display = 'grid';
@@ -311,7 +678,7 @@
                     }, 10);
 
                     // Copy to clipboard
-                    copyToClipboard(resultData.url);
+                    copyToClipboard(resultData.url, copyButton);
                 })
                 .catch((error) => {
                     setLoadingState(false);
@@ -373,9 +740,10 @@
             }
         });
 
-        // Input change event for clear button visibility
+        // Input change event for clear button visibility and platform detection
         inputURL.addEventListener('input', function() {
             updateClearButton();
+            updatePlatformIndicator(this.value);
             if (this.value.trim()) {
                 hideError();
             }
@@ -389,6 +757,44 @@
         inputURL.addEventListener('blur', function() {
             this.style.borderColor = '#00acc1';
         });
+
+        // Copy button for original URL
+        copyInitButton.addEventListener('click', async (event) => {
+            event.preventDefault();
+            const url = initUrlLink.href;
+            if (url) {
+                await copyToClipboard(url, copyInitButton);
+            }
+        });
+
+        // Swap button event
+        swapButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            swapConversion();
+        });
+
+
+        // Example links event
+        document.querySelectorAll('.example-link').forEach(button => {
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                const url = button.getAttribute('data-url');
+                inputURL.value = url;
+                updateClearButton();
+                updatePlatformIndicator(url);
+                convert(url);
+            });
+        });
+
+        // Keyboard shortcut (Cmd/Ctrl+K) to focus input
+        document.addEventListener('keydown', (event) => {
+            if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+                event.preventDefault();
+                inputURL.focus();
+                inputURL.select();
+            }
+        });
+
     </script>
 </body>
 
