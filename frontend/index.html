@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spoteezer</title>
+    <link rel="icon" type="image/png" href="assets/spoteezer.png">
+    <link rel='stylesheet' type='text/css' href='style.css'>
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+</head>
+
+<body>
+    <div id="center-elems">
+        <div id="error-message" class="error-message" role="alert" aria-live="polite"></div>
+        <input 
+            id="input-url" 
+            type="text"
+            placeholder="Enter a Deezer or Spotify link (track, album, artist)"
+            aria-label="Enter a Deezer or Spotify link"
+            autocomplete="off">
+        <div class="button-container">
+            <button id="convert-button" class="button" type="submit" aria-label="Convert and copy link">Convert & Copy</button>
+            <button id="clear-button" class="button button-clear" type="button" aria-label="Clear input" style="display: none;">Clear</button>
+        </div>
+    </div>
+
+    <div class="loader-container" role="status" aria-live="polite">
+        <div class="spinner"></div>
+        <p class="loading-text">Converting...</p>
+    </div>
+
+    <div class="iframe-container" role="region" aria-label="Conversion results">
+        <div class="iframe-wrapper">
+            <div class="iframe-header">
+                <span class="platform-label" id="init-platform-label">Original</span>
+            </div>
+            <iframe 
+                id="init-iframe" 
+                class="iframe" 
+                src="" 
+                width="100%" 
+                height="380" 
+                frameBorder="0" 
+                allowfullscreen 
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                loading="lazy"
+                title="Original track preview"
+                aria-label="Original track preview">
+            </iframe>
+            <div class="url-display">
+                <a id="init-url-link" href="" target="_blank" rel="noopener noreferrer" class="url-link" aria-label="Open original URL in new tab"></a>
+            </div>
+        </div>
+        <div class="iframe-wrapper">
+            <div class="iframe-header">
+                <span class="platform-label" id="result-platform-label">Converted</span>
+            </div>
+            <iframe 
+                id="result-iframe" 
+                class="iframe" 
+                src="" 
+                width="100%" 
+                height="380" 
+                frameBorder="0" 
+                allowfullscreen 
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                loading="lazy"
+                title="Converted track preview"
+                aria-label="Converted track preview">
+            </iframe>
+            <div class="url-display">
+                <a id="result-url-link" href="" target="_blank" rel="noopener noreferrer" class="url-link" aria-label="Open converted URL in new tab"></a>
+                <button id="copy-button" class="copy-button" aria-label="Copy converted URL to clipboard" title="Copy to clipboard">
+                    <span class="copy-icon">📋</span>
+                    <span class="copy-text">Copy</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script type="text/javascript">
+        // DOM elements
+        const inputURL = document.getElementById('input-url');
+        const buttonElement = document.getElementById('convert-button');
+        const clearButton = document.getElementById('clear-button');
+        const errorMessage = document.getElementById('error-message');
+        const loaderContainer = document.getElementsByClassName('loader-container')[0];
+        const iframeContainer = document.getElementsByClassName('iframe-container')[0];
+        const initIframe = document.getElementById('init-iframe');
+        const resultIframe = document.getElementById('result-iframe');
+        const initUrlLink = document.getElementById('init-url-link');
+        const resultUrlLink = document.getElementById('result-url-link');
+        const copyButton = document.getElementById('copy-button');
+        const initPlatformLabel = document.getElementById('init-platform-label');
+        const resultPlatformLabel = document.getElementById('result-platform-label');
+        const toast = document.getElementById('toast');
+
+        // Initialize UI state
+        loaderContainer.style.display = 'none';
+        iframeContainer.style.display = 'none';
+        errorMessage.style.display = 'none';
+
+        // URL validation patterns
+        const SPOTIFY_PATTERN = /^https?:\/\/(open\.)?spotify\.com\/(track|album|artist|playlist)\/[a-zA-Z0-9]+/i;
+        const DEEZER_PATTERN = /^https?:\/\/(www\.)?deezer\.com\/([a-z]+\/)?(track|album|artist|playlist)\/[0-9]+/i;
+
+        /**
+         * Validates if the URL is a valid Spotify or Deezer link
+         * @param {string} url - The URL to validate
+         * @returns {Object} - {valid: boolean, message: string}
+         */
+        function validateURL(url) {
+            const trimmedUrl = url.trim();
+            
+            if (!trimmedUrl) {
+                return { valid: false, message: 'Please enter a URL' };
+            }
+
+            if (!SPOTIFY_PATTERN.test(trimmedUrl) && !DEEZER_PATTERN.test(trimmedUrl)) {
+                return { 
+                    valid: false, 
+                    message: 'Please enter a valid Spotify or Deezer link (track, album, artist, or playlist)' 
+                };
+            }
+
+            return { valid: true, message: '' };
+        }
+
+        /**
+         * Shows an error message to the user
+         * @param {string} message - The error message to display
+         */
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            errorMessage.setAttribute('aria-live', 'assertive');
+        }
+
+        /**
+         * Hides the error message
+         */
+        function hideError() {
+            errorMessage.style.display = 'none';
+            errorMessage.textContent = '';
+        }
+
+        /**
+         * Shows a toast notification
+         * @param {string} message - The message to display
+         * @param {string} type - The type of toast ('success' or 'error')
+         */
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast toast-${type}`;
+            toast.style.display = 'block';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        /**
+         * Sets the loading state
+         * @param {boolean} isLoading - Whether to show loading state
+         */
+        function setLoadingState(isLoading) {
+            if (isLoading) {
+                loaderContainer.style.display = 'flex';
+                buttonElement.disabled = true;
+                buttonElement.textContent = 'Converting...';
+                iframeContainer.style.display = 'none';
+                hideError();
+            } else {
+                loaderContainer.style.display = 'none';
+                buttonElement.disabled = false;
+                buttonElement.textContent = 'Convert & Copy';
+            }
+        }
+
+        /**
+         * Updates the clear button visibility based on input value
+         */
+        function updateClearButton() {
+            if (inputURL.value.trim()) {
+                clearButton.style.display = 'block';
+            } else {
+                clearButton.style.display = 'none';
+            }
+        }
+
+        /**
+         * Generates the embed URL based on type, id, and platform
+         * @param {string} _type - The type (track, album, artist, playlist)
+         * @param {string} id - The item ID
+         * @param {string} platform - The platform ('spotify' or 'deezer')
+         * @returns {string} - The embed URL
+         */
+        function generateEmbedURL(_type, id, platform) {
+            if (platform === 'deezer') {
+                const base_url = `https://widget.deezer.com/widget/auto/${_type}/${id}`;
+                if (_type === 'artist') {
+                    return base_url + '/top_tracks';
+                }
+                return base_url;
+            } else if (platform === 'spotify') {
+                return `https://open.spotify.com/embed/${_type}/${id}?utm_source=generator`;
+            }
+            return '';
+        }
+
+        /**
+         * Gets the platform display name
+         * @param {string} platform - The platform name
+         * @returns {string} - The display name
+         */
+        function getPlatformDisplayName(platform) {
+            return platform.charAt(0).toUpperCase() + platform.slice(1);
+        }
+
+        /**
+         * Copies text to clipboard with error handling
+         * @param {string} text - The text to copy
+         * @returns {Promise<boolean>} - Whether the copy was successful
+         */
+        async function copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast('✓ Copied to clipboard!', 'success');
+                return true;
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                showToast('Failed to copy to clipboard', 'error');
+                return false;
+            }
+        }
+
+        /**
+         * Converts the URL by sending a request to the server
+         * @param {string} initURL - The URL to convert
+         */
+        function convert(initURL) {
+            // Validate input
+            const validation = validateURL(initURL);
+            if (!validation.valid) {
+                showError(validation.message);
+                return;
+            }
+
+            const trimmedURL = initURL.trim();
+            setLoadingState(true);
+
+            // Send POST request to the server
+            fetch('https://rayandaod.pythonanywhere.com/convert', {
+            // fetch('http://127.0.0.1:8080/convert', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ initURL: trimmedURL }),
+            })
+                .then((response) => {
+                    // Check if response is ok
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    setLoadingState(false);
+
+                    // Check for API errors (empty result object)
+                    if (!data.result || !data.result.init || !data.result.result) {
+                        const errorMsg = data.log || 'Conversion failed. Please try again.';
+                        showError(errorMsg);
+                        return;
+                    }
+
+                    // Extract data from response
+                    const initData = data.result.init;
+                    const resultData = data.result.result;
+
+                    // Update iframes
+                    initIframe.src = generateEmbedURL(initData.type, initData.id, initData.platform);
+                    resultIframe.src = generateEmbedURL(resultData.type, resultData.id, resultData.platform);
+
+                    // Update URL links
+                    initUrlLink.href = initData.url;
+                    initUrlLink.textContent = initData.url;
+                    initUrlLink.setAttribute('aria-label', `Open original ${getPlatformDisplayName(initData.platform)} URL`);
+
+                    resultUrlLink.href = resultData.url;
+                    resultUrlLink.textContent = resultData.url;
+                    resultUrlLink.setAttribute('aria-label', `Open converted ${getPlatformDisplayName(resultData.platform)} URL`);
+
+                    // Update platform labels
+                    initPlatformLabel.textContent = `Original (${getPlatformDisplayName(initData.platform)})`;
+                    resultPlatformLabel.textContent = `Converted (${getPlatformDisplayName(resultData.platform)})`;
+
+                    // Set background image
+                    if (initData.img_url) {
+                        document.body.style.backgroundImage = `url(${initData.img_url})`;
+                        document.body.style.backgroundRepeat = 'repeat';
+                    }
+
+                    // Show iframe container with animation
+                    iframeContainer.style.display = 'grid';
+                    iframeContainer.style.opacity = '0';
+                    setTimeout(() => {
+                        iframeContainer.style.opacity = '1';
+                    }, 10);
+
+                    // Copy to clipboard
+                    copyToClipboard(resultData.url);
+                })
+                .catch((error) => {
+                    setLoadingState(false);
+                    console.error('Conversion error:', error);
+                    
+                    let errorMsg = 'Network error. Please check your connection and try again.';
+                    if (error.message.includes('HTTP error')) {
+                        errorMsg = 'Server error. Please try again later.';
+                    }
+                    showError(errorMsg);
+                });
+        }
+
+        // Event listeners
+
+        // Paste event - only trigger if input is focused or empty
+        document.addEventListener('paste', (event) => {
+            const isInputFocused = document.activeElement === inputURL;
+            const isInputEmpty = !inputURL.value.trim();
+            
+            if (isInputFocused || isInputEmpty) {
+                const paste = (event.clipboardData || window.clipboardData).getData('text');
+                inputURL.value = paste;
+                updateClearButton();
+                convert(paste);
+            }
+        });
+
+        // Button click event
+        buttonElement.addEventListener('click', (event) => {
+            event.preventDefault();
+            convert(inputURL.value);
+        });
+
+        // Clear button click event
+        clearButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            inputURL.value = '';
+            inputURL.focus();
+            hideError();
+            iframeContainer.style.display = 'none';
+            updateClearButton();
+        });
+
+        // Copy button click event
+        copyButton.addEventListener('click', async (event) => {
+            event.preventDefault();
+            const url = resultUrlLink.href;
+            if (url) {
+                await copyToClipboard(url);
+            }
+        });
+
+        // Enter key press event
+        inputURL.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                buttonElement.click();
+            }
+        });
+
+        // Input change event for clear button visibility
+        inputURL.addEventListener('input', function() {
+            updateClearButton();
+            if (this.value.trim()) {
+                hideError();
+            }
+        });
+
+        // Focus event for better UX
+        inputURL.addEventListener('focus', function() {
+            this.style.borderColor = '#00acc1';
+        });
+
+        inputURL.addEventListener('blur', function() {
+            this.style.borderColor = '#00acc1';
+        });
+    </script>
+</body>
+
+</html>

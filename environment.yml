@@ -1,9 +1,0 @@
-name: spoteezer
-
-dependencies:
-  - python=3.10.8
-  - pip:
-    - requests
-    - spotipy
-    - flask
-    - flask_cors

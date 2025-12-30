@@ -1,6 +1,5 @@
 # List of special characters to remove from the strings, or to replace with a space.
-SPE_CHARS = [(['"', '+'], ''),
-             (['  '], ' ')]
+SPE_CHARS = [(['"', "+"], ""), (["  "], " ")]
 
 
 def get_first_value_with_substr(dictionary, key, substring):

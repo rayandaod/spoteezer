@@ -1,5 +1,4 @@
-.DS_Store
-.cache
-__pycache__
+**/.DS_Store
+**/.cache
+**/__pycache__
 architecture.md
-logs.log
