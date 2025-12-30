@@ -35,7 +35,7 @@ structlog.configure(
 )
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST", "OPTIONS"], "allow_headers": ["Content-Type"]}})
 
 # Get a logger for the Flask app
 LOGGER: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
@@ -81,4 +81,4 @@ def convert():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8080, debug=True)
+    app.run(host="127.0.0.1", port=5000, debug=True)

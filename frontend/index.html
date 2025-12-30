@@ -580,8 +580,8 @@
             setLoadingState(true);
 
             // Send POST request to the server
-            fetch('https://rayandaod.pythonanywhere.com/convert', {
-            // fetch('http://127.0.0.1:8080/convert', {
+            // fetch('https://rayandaod.pythonanywhere.com/convert', {
+            fetch('http://127.0.0.1:5000/convert', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ initURL: trimmedURL }),
@@ -694,15 +694,26 @@
 
         // Event listeners
 
-        // Paste event - only trigger if input is focused or empty
+        // Paste event - handle paste globally, but avoid interfering with other inputs
         document.addEventListener('paste', (event) => {
-            const isInputFocused = document.activeElement === inputURL;
-            const isInputEmpty = !inputURL.value.trim();
+            const activeElement = document.activeElement;
+            const isInputFocused = activeElement === inputURL;
+            const isOtherInput = activeElement && (
+                activeElement.tagName === 'INPUT' || 
+                activeElement.tagName === 'TEXTAREA' ||
+                activeElement.isContentEditable
+            );
             
-            if (isInputFocused || isInputEmpty) {
+            // Only handle paste if input is focused, or if no other input is focused
+            if (isInputFocused || !isOtherInput) {
+                // Prevent default paste behavior to avoid double pasting when input is focused
+                if (isInputFocused) {
+                    event.preventDefault();
+                }
                 const paste = (event.clipboardData || window.clipboardData).getData('text');
                 inputURL.value = paste;
                 updateClearButton();
+                updatePlatformIndicator(paste);
                 convert(paste);
             }
         });
@@ -793,6 +804,11 @@
                 inputURL.focus();
                 inputURL.select();
             }
+        });
+
+        // Auto-focus input field on page load
+        window.addEventListener('load', () => {
+            inputURL.focus();
         });
 
     </script>
