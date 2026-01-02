@@ -1,0 +1,19 @@
+repos:
+  - repo: local
+    hooks:
+      - id: lint
+        name: Lint with ruff
+        entry: bash -c 'cd backend && just lint'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [commit]
+
+      - id: type-check
+        name: Type check with ty
+        entry: bash -c 'cd backend && just type'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [commit]
+
