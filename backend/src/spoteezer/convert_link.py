@@ -1,12 +1,14 @@
 import structlog
 
+from typing import Union
+
 from spoteezer.items.abstract_item import AbstractItem
 from spoteezer.items.deezer_item import DeezerItem
 from spoteezer.items.spotify_item import SpotifyItem
 
 LOGGER: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
 
-def get_item(url: str):
+def get_item(url: str) -> Union[DeezerItem, SpotifyItem]:
     """Gets the item from the given URL.
 
     Args:
@@ -30,7 +32,7 @@ def get_item(url: str):
     return item
 
 
-def convert_item(init_item: AbstractItem):
+def convert_item(init_item: AbstractItem) -> Union[DeezerItem, SpotifyItem]:
     """Converts the given initial item into another item,
     i.e from a DeezerItem to a SpotifyItem and vice-versa.
 

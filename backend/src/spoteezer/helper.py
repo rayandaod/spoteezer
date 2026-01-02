@@ -1,8 +1,10 @@
+from typing import Any
+
 # List of special characters to remove from the strings, or to replace with a space.
 SPE_CHARS = [(['"', "+"], ""), (["  "], " ")]
 
 
-def get_first_value_with_substr(dictionary, key, substring):
+def get_first_value_with_substr(dictionary: dict[str, Any] | list[Any] | Any, key: str, substring: str) -> str | None:
     """Gets the first value of the given dictionary corresponding to the
     given key, and contains the given substring.
 

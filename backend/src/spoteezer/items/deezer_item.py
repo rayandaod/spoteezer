@@ -1,7 +1,7 @@
 import pprint
 import structlog
 
-from typing import Optional
+from typing import Optional, Any
 from urllib.parse import quote
 
 from spoteezer.items.abstract_item import AbstractItem, SEARCH_PARAM_TRIALS_DICT
@@ -14,6 +14,7 @@ LOGGER: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
 
 class DeezerItem(AbstractItem):
     PLATFORM = "deezer"
+    id: int  # Override: Deezer IDs are always int
 
     def __init__(self, url: Optional[str] = None, item: Optional[AbstractItem] = None):
         """Instanciates a Deezer item based on the given parameter(s).
@@ -54,12 +55,13 @@ class DeezerItem(AbstractItem):
                 self.raw_info = self.get_first_raw_info(results)
 
             # Get id, url, and web_info from raw_info
+            assert self.raw_info is not None, "raw_info must be set"
             self.id = self.raw_info["id"]
             self.url = self.raw_info["link"]
             self.img_url = self.get_img_url()
             self.web_info = self.extract_web_info()
 
-    def get_raw_info_from_id(self):
+    def get_raw_info_from_id(self) -> dict[str, Any]:
         """Gets the raw info from the id and type of a Deezer item.
 
         Args:
@@ -80,7 +82,7 @@ class DeezerItem(AbstractItem):
 
         return result.as_dict()
 
-    def get_first_raw_info(self, results):
+    def get_first_raw_info(self, results: Any) -> dict[str, Any]:
         """Extracts raw information from search results, i.e the
         first item here.
 
@@ -92,7 +94,7 @@ class DeezerItem(AbstractItem):
         """
         return results[0].as_dict()
 
-    def get_search_params(self):
+    def get_search_params(self) -> dict[str, Any]:
         """Gets the search parameters for later search, based on the given raw
         information.
 
@@ -105,6 +107,7 @@ class DeezerItem(AbstractItem):
         Returns:
             dict: The search parameters issued from the raw information of the current item.
         """
+        assert self.raw_info is not None, "raw_info must be set before calling get_search_params"
         if self.type == "track":
             search_params = {
                 "track": preprocess_string(self.raw_info["title"]),
@@ -131,20 +134,23 @@ class DeezerItem(AbstractItem):
 
         return search_params
 
-    def get_img_url(self):
+    def get_img_url(self) -> str:
         """Gets the image URL of the item.
 
         Returns:
             str: The image URL of the item.
         """
+        assert self.raw_info is not None, "raw_info must be set before calling get_img_url"
         if self.type == "track":
             return self.raw_info["album"]["cover_big"]
         elif self.type == "album":
             return self.raw_info["cover_big"]
         elif self.type == "artist":
             return self.raw_info["picture_big"]
+        else:
+            raise ValueError(f"Invalid Deezer item type: {self.type}")
 
-    def search(self, search_params, _type, limit=1):
+    def search(self, search_params: dict[str, Any], _type: str, limit: int = 1) -> Any:
         """Searches the Deeezer database with the given search parameters.
         Tries search parameter combinations by decreasing order of precision,
         according to the SEARCH_PARAM_TRIALS_DICT dictionary.
@@ -197,7 +203,7 @@ class DeezerItem(AbstractItem):
 
         return results
 
-    def get_track_from_isrc(self):
+    def get_track_from_isrc(self) -> dict[str, Any] | None:
         """Searches the Deezer database with the current ISRC.
 
         Returns:

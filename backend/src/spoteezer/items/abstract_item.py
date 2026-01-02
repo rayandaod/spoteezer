@@ -3,6 +3,7 @@ import requests
 import structlog
 
 from abc import ABC, abstractmethod
+from typing import Optional, Any
 
 PRETTY_PRINTER = pprint.PrettyPrinter(indent=4)
 LOGGER: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
@@ -28,8 +29,15 @@ SEARCH_PARAM_TRIALS_DICT = {
 
 class AbstractItem(ABC):
     PLATFORM: str
+    url: str
+    type: str
+    id: str | int
+    raw_info: dict[str, Any] | None
+    search_params: dict[str, Any]
+    img_url: str
+    isrc: str | None
 
-    def __init__(self, url: str = None, item=None):
+    def __init__(self, url: Optional[str] = None, item: Optional["AbstractItem"] = None):
         """Instantiates an Item object given an URL.
 
         Args:
@@ -53,7 +61,7 @@ class AbstractItem(ABC):
         else:
             self.url = responses.url
 
-    def extract_web_info(self):
+    def extract_web_info(self) -> dict[str, Any]:
         """Extracts useful information for the web interfaces.
 
         Args:
@@ -72,25 +80,25 @@ class AbstractItem(ABC):
         }
 
     @abstractmethod
-    def get_raw_info_from_id(self):
+    def get_raw_info_from_id(self) -> dict[str, Any]:
         pass
 
     @abstractmethod
-    def get_first_raw_info(self):
+    def get_first_raw_info(self, results: Any) -> dict[str, Any]:
         pass
 
     @abstractmethod
-    def get_search_params(self):
+    def get_search_params(self) -> dict[str, Any]:
         pass
 
     @abstractmethod
-    def get_img_url(self):
+    def get_img_url(self) -> str:
         pass
 
     @abstractmethod
-    def search(self):
+    def search(self, search_params: dict[str, Any], _type: str, limit: int = 1) -> Any:
         pass
 
     @abstractmethod
-    def get_track_from_isrc(self):
+    def get_track_from_isrc(self) -> dict[str, Any] | None:
         pass

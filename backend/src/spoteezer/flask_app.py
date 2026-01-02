@@ -1,6 +1,8 @@
 import logging
 import structlog
 
+from typing import Any
+
 from flask import Flask, request
 from flask_cors import CORS
 
@@ -43,7 +45,7 @@ app.logger = LOGGER
 
 
 @app.route("/convert", methods=["POST"])
-def convert():
+def convert() -> dict[str, Any]:
     """Creates an Item from the given URL, converts it
     into another item (Spotify or Deezer), and extract useful
     information for web display.
@@ -55,7 +57,12 @@ def convert():
     LOGGER.info("conversion_started")
 
     # Get the init URL from the request body
-    init_url = request.get_json().get("initURL", None)
+    request_json = request.get_json()
+    if request_json is None:
+        return {"result": {}, "log": "Invalid request: missing JSON body"}
+    init_url = request_json.get("initURL", None)
+    if init_url is None:
+        return {"result": {}, "log": "Invalid request: missing initURL"}
 
     try:
         init_item = get_item(init_url)

@@ -2,6 +2,7 @@ import re
 import pprint
 import structlog
 
+from typing import Optional, Any
 from urllib.parse import urlparse
 
 from spoteezer.items.abstract_item import AbstractItem, SEARCH_PARAM_TRIALS_DICT
@@ -15,7 +16,7 @@ LOGGER: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
 class SpotifyItem(AbstractItem):
     PLATFORM = "spotify"
 
-    def __init__(self, url: str = None, item: AbstractItem = None):
+    def __init__(self, url: Optional[str] = None, item: Optional[AbstractItem] = None):
         """Constructor for the SpotifyItem class.
 
         Args:
@@ -71,18 +72,27 @@ class SpotifyItem(AbstractItem):
             # Get raw_info by search
             if self.raw_info is None:
                 res = self.search(self.search_params, self.type)
+                if res is None:
+                    raise FileNotFoundError("Could not find item on Spotify...")
+                self.raw_info = self.get_first_raw_info(res)
+            else:
+                # raw_info was set from ISRC search
+                pass
 
             # Get id, url, and web_info from raw_info
-            self.raw_info = self.get_first_raw_info(res)
+            assert self.raw_info is not None, "raw_info must be set"
             self.id = self.raw_info["id"]
-            self.url = get_first_value_with_substr(
+            url_result = get_first_value_with_substr(
                 self.raw_info, "spotify", substring=self.type
             )
+            if url_result is None:
+                raise ValueError("Could not extract URL from raw_info")
+            self.url = url_result
             self.img_url = self.get_img_url()
             self.web_info = self.extract_web_info()
 
     # Remove everything after "with", "with" included, if there is a "with" in track name
-    def preprocess_string(self, string):
+    def preprocess_string(self, string: str) -> str:
         stop_words = ["with", "feat", "ft", "featuring"]
 
         for word in stop_words:
@@ -97,7 +107,7 @@ class SpotifyItem(AbstractItem):
 
         return string
 
-    def get_raw_info_from_id(self):
+    def get_raw_info_from_id(self) -> dict[str, Any]:
         """Gets the raw info from the Spotify API using the id and type.
 
         Raises:
@@ -119,7 +129,7 @@ class SpotifyItem(AbstractItem):
         else:
             raise ValueError("Invalid Spotify item type")
 
-    def get_first_raw_info(self, results):
+    def get_first_raw_info(self, results: dict[str, Any]) -> dict[str, Any]:
         """Gets the first item from a Spotify search results.
 
         Args:
@@ -131,7 +141,7 @@ class SpotifyItem(AbstractItem):
         """
         return results[f"{self.type}s"]["items"][0]
 
-    def get_search_params(self):
+    def get_search_params(self) -> dict[str, Any]:
         """Gets the search parameters from the raw info of the item.
 
         Args:
@@ -143,8 +153,9 @@ class SpotifyItem(AbstractItem):
         Returns:
             dictionary: The search parameters for later constructing a search query.
         """
+        assert self.raw_info is not None, "raw_info must be set before calling get_search_params"
 
-        def _prep_spotify_track_name(track_name):
+        def _prep_spotify_track_name(track_name: str) -> str:
             """Preprocesses the track name.
 
             Returns:
@@ -181,20 +192,23 @@ class SpotifyItem(AbstractItem):
 
         return search_params
 
-    def get_img_url(self):
+    def get_img_url(self) -> str:
         """Gets the image url of the Spotify item.
 
         Returns:
             string: The image url of the Spotify item.
         """
+        assert self.raw_info is not None, "raw_info must be set before calling get_img_url"
         if self.type == "track":
             return self.raw_info["album"]["images"][0]["url"]
         elif self.type == "album":
             return self.raw_info["images"][0]["url"]
         elif self.type == "artist":
             return self.raw_info["images"][0]["url"]
+        else:
+            raise ValueError(f"Invalid Spotify item type: {self.type}")
 
-    def search(self, search_params, _type, limit=1):
+    def search(self, search_params: dict[str, Any], _type: str, limit: int = 1) -> dict[str, Any]:
         """Searches for the item on Spotify.
 
         Raises:
@@ -249,7 +263,7 @@ class SpotifyItem(AbstractItem):
         LOGGER.debug("spotify_results", results=PRETTY_PRINTER.pformat(results))
         return results
 
-    def get_track_from_isrc(self):
+    def get_track_from_isrc(self) -> dict[str, Any] | None:
         """Gets the track info from the Spotify API using the ISRC.
 
         Args:
