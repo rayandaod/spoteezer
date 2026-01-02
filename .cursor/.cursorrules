@@ -1,0 +1,11 @@
+# Cursor Rules for Spoteezer
+
+## Command Execution
+- Always use `just` commands when available instead of running commands directly
+- For Python commands, use `uv run` instead of calling Python directly
+- Prefer `just` commands from the root justfile or backend justfile over direct command execution
+- Examples:
+  - Use `just run` instead of `flask run`
+  - Use `just test` instead of `pytest`
+  - Use `just lint` instead of `ruff check`
+  - Use `uv run <command>` for any Python tool execution

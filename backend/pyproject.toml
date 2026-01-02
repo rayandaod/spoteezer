@@ -26,3 +26,8 @@ spoteezer = "spoteezer:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+markers = [
+    "live: Live integration tests that make actual API calls",
+]

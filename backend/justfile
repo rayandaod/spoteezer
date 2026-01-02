@@ -1,0 +1,28 @@
+set dotenv-filename := ".env"
+
+default:
+    just --list
+
+# Setup the .env file
+setup:
+    cp .env.example .env
+
+# Running the Flask app
+run:
+    uv run flask --app spoteezer.flask_app:app run
+
+# Testing
+test test_folder="tests":
+    uv run pytest {{test_folder}} -m "not live"
+
+# Test live integration
+test-live url="https://open.spotify.com/track/1lbNgoJ5iMrMluCyhI4OQP":
+    uv run pytest -m live --url {{url}}
+
+# Linting
+lint:
+    uv run ruff check . --fix
+
+# Type checking
+type:
+    uv run ty check
