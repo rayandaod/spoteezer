@@ -910,3 +910,42 @@ kbd {
         width: 100%;
     }
 }
+
+/* Footer styles */
+.main-footer {
+    margin-top: 3em;
+    padding: 1.5em;
+    text-align: center;
+    width: 100%;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9em;
+}
+
+.main-footer p {
+    margin: 0;
+}
+
+.footer-link {
+    color: var(--accent-color);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.footer-link:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+}
+
+.footer-link:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+@media (max-width: 768px) {
+    .main-footer {
+        margin-top: 2em;
+        padding: 1em;
+        font-size: 0.85em;
+    }
+}
